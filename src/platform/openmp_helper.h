@@ -8,13 +8,37 @@ namespace platform {
     void register_openmp_stencils(stencil_factory &factory, const std::string &platform) {
         using namespace backend::openmp::stencil;
 
-        factory.register_stencil<basic_copy_1d<Allocator>>(platform, "openmp", "basic-copy-1d");
-        factory.register_stencil<basic_avgi_1d<Allocator>>(platform, "openmp", "basic-avgi-1d");
-        factory.register_stencil<basic_avgj_1d<Allocator>>(platform, "openmp", "basic-avgj-1d");
-        factory.register_stencil<basic_avgk_1d<Allocator>>(platform, "openmp", "basic-avgk-1d");
-        factory.register_stencil<basic_lapij_1d<Allocator>>(platform, "openmp", "basic-lapij-1d");
-        factory.register_stencil<basic_lapik_1d<Allocator>>(platform, "openmp", "basic-lapik-1d");
-        factory.register_stencil<basic_lapjk_1d<Allocator>>(platform, "openmp", "basic-lapjk-1d");
-        factory.register_stencil<basic_lapijk_1d<Allocator>>(platform, "openmp", "basic-lapijk-1d");
+        auto name = [](const std::string &classname) {
+            std::string cn = classname;
+            std::replace(cn.begin(), cn.end(), '_', '-');
+            return cn;
+        };
+
+#define REGISTER_STENCIL(stencil, args) \
+    factory.register_stencil<stencil<Allocator>>(platform, "openmp", name(#stencil), args)
+
+        REGISTER_STENCIL(basic_copy_1d, {});
+        REGISTER_STENCIL(basic_avgi_1d, {});
+        REGISTER_STENCIL(basic_avgj_1d, {});
+        REGISTER_STENCIL(basic_avgk_1d, {});
+        REGISTER_STENCIL(basic_lapij_1d, {});
+        REGISTER_STENCIL(basic_lapik_1d, {});
+        REGISTER_STENCIL(basic_lapjk_1d, {});
+        REGISTER_STENCIL(basic_lapijk_1d, {});
+
+        std::vector<std::tuple<std::string, std::string, std::string>> stencilargs = {
+            std::make_tuple("i-blocksize", "block size in i-direction", "1024"),
+            std::make_tuple("j-blocksize", "block size in j-direction", "1"),
+            std::make_tuple("k-blocksize", "block size in k-direction", "1")};
+        REGISTER_STENCIL(basic_copy_blocked, stencilargs);
+        REGISTER_STENCIL(basic_avgi_blocked, stencilargs);
+        REGISTER_STENCIL(basic_avgj_blocked, stencilargs);
+        REGISTER_STENCIL(basic_avgk_blocked, stencilargs);
+        REGISTER_STENCIL(basic_lapij_blocked, stencilargs);
+        REGISTER_STENCIL(basic_lapik_blocked, stencilargs);
+        REGISTER_STENCIL(basic_lapjk_blocked, stencilargs);
+        REGISTER_STENCIL(basic_lapijk_blocked, stencilargs);
+
+#undef REGISTER_STENCIL
     }
 } // namespace platform
