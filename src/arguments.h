@@ -69,8 +69,8 @@ class arguments {
   public:
     arguments(const std::string &command_name = "command", const std::string &subcommand_name = "subcommand");
 
-    arguments &add(const argument& a);
-    arguments &add(const flag& f);
+    arguments &add(const argument &a);
+    arguments &add(const flag &f);
 
     arguments &command(const std::string &command_name, const std::string &subcommand_name = "subcommand");
 

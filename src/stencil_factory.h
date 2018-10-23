@@ -15,9 +15,7 @@ class stencil_factory {
     stencil_factory(arguments &args) : m_args(args) {}
 
     template <class Stencil>
-    void register_stencil(const std::string &platform,
-        const std::string &backend,
-        const std::string &name) {
+    void register_stencil(const std::string &platform, const std::string &backend, const std::string &name) {
         m_map[platform][backend][name] = [](const arguments_map &args) { return stencil_ptr(new Stencil(args)); };
 
         auto &sc = m_args.command(platform, "backend").command(backend, "stencil").command(name);

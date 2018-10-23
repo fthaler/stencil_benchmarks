@@ -9,9 +9,7 @@ namespace stencil {
     template <class Functor, class Allocator>
     class basic : public stencil_execution {
       public:
-        static void register_arguments(arguments& args) {
-            stencil_execution::register_arguments(args);
-        }
+        static void register_arguments(arguments &args) { stencil_execution::register_arguments(args); }
 
         basic(const arguments_map &args)
             : stencil_execution(args), m_src(create_field<real, Allocator>()), m_dst(create_field<real, Allocator>()) {

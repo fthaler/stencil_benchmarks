@@ -12,7 +12,7 @@ namespace backend {
               public:
                 using ::stencil::basic<Functor, Allocator>::basic;
 
-                static void register_arguments(arguments& args) {
+                static void register_arguments(arguments &args) {
                     ::stencil::basic<Functor, Allocator>::register_arguments(args);
                 }
 
