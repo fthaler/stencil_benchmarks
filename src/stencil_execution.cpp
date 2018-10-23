@@ -44,15 +44,15 @@ double stencil_execution::benchmark() {
 const field_info &stencil_execution::info() const { return m_repository.info(); }
 
 void stencil_execution::register_arguments(arguments &args) {
-    args.add("i-size", "domain size in i-direction", "1024")
-        .add("j-size", "domain size in j-direction", "1024")
-        .add("k-size", "domain size in k-direction", "80")
-        .add("i-layout", "layout specifier", "2")
-        .add("j-layout", "layout specifier", "1")
-        .add("k-layout", "layout specifier", "0")
-        .add("halo", "halo size", "2")
-        .add("alignment", "alignment in elements", "1")
-        .add("runs", "number of runs", "20");
+    args.add({"i-size", "domain size in i-direction", "1024"})
+        .add({"j-size", "domain size in j-direction", "1024"})
+        .add({"k-size", "domain size in k-direction", "80"})
+        .add({"i-layout", "layout specifier", "2"})
+        .add({"j-layout", "layout specifier", "1"})
+        .add({"k-layout", "layout specifier", "0"})
+        .add({"halo", "halo size", "2"})
+        .add({"alignment", "alignment in elements", "1"})
+        .add({"runs", "number of runs", "20"});
 }
 
 void stencil_execution::loop(std::function<void(int, int, int)> f, int halo) const {

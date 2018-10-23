@@ -1,20 +1,18 @@
-#include <memory>
-
-#include "arguments.h"
-#include "platform/generic.h"
-#include "platform/knl_allocator.h"
+#include "platform/knl.h"
+#include "backend/openmp.h"
+#include "platform/knl/allocator.h"
 #include "real.h"
-
-#include "platform/openmp_helper.h"
+#include "stencil_factory.h"
+#include <memory>
 
 namespace platform {
     namespace knl {
 
         void register_stencils(stencil_factory &factory) {
-            using allocator = knl_allocator<real>;
+            using allocator = knl::allocator<real>;
             const std::string platform = "knl";
 
-            register_openmp_stencils<allocator>(factory, platform);
+            backend::openmp::register_stencils<allocator>(factory, platform);
         }
 
     } // namespace knl

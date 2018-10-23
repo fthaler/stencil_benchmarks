@@ -54,13 +54,13 @@ std::ostream &operator<<(std::ostream &out, const arguments_map &argsmap) {
 arguments::arguments(const std::string &command_name, const std::string &subcommand_name)
     : m_command_name(command_name), m_subcommand_name(subcommand_name) {}
 
-arguments &arguments::add(const std::string &name, const std::string &description, const std::string &default_value) {
-    m_args.push_back({name, description, default_value});
+arguments &arguments::add(const argument &a) {
+    m_args.push_back(a);
     return *this;
 }
 
-arguments &arguments::add_flag(const std::string &name, const std::string &description) {
-    m_flags.push_back({name, description});
+arguments &arguments::add(const flag &f) {
+    m_flags.push_back(f);
     return *this;
 }
 
@@ -116,6 +116,12 @@ void arguments::print_help() const {
     }
 }
 
+void arguments::print_subcommands() const {
+    for (const auto &command : m_command_map) {
+        std::cout << command.first << std::endl;
+    }
+}
+
 arguments_map arguments::parse(int argc, char **argv) const {
     std::string command;
     int subcommand_argc = argc;
@@ -145,7 +151,7 @@ arguments_map arguments::parse(int argc, char **argv) const {
     int index;
     while (true) {
         index = -1;
-        int c = getopt_long_only(subcommand_argc, argv, "h", options.data(), &index);
+        int c = getopt_long_only(subcommand_argc, argv, "hc", options.data(), &index);
 
         if (c == -1)
             break;
@@ -159,6 +165,9 @@ arguments_map arguments::parse(int argc, char **argv) const {
             break;
         case 'h':
             print_help();
+            std::exit(0);
+        case 'c':
+            print_subcommands();
             std::exit(0);
         case '?':
             std::cerr << "Error: invalid argument '" << argv[optind - 1] << "' for command '" << m_command_name << "'"

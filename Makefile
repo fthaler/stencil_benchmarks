@@ -23,14 +23,27 @@ SRCS=$(shell find . -name '*.cpp')
 OBJS=$(SRCS:%.cpp=%.o)
 DEPS=$(SRCS:%.cpp=%.d)
 
+NVCCAVAIL:=$(shell command nvcc --version 2> /dev/null)
+
 sbench: $(OBJS)
+ifdef NVCCAVAIL
+	nvcc $(NVCCFLAGS) $+ $(LIBS) -o $@
+else
 	$(CXX) $(CXXFLAGS) $+ $(LIBS) -o $@
+endif
 
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 src/platform/knl.o: src/platform/knl.cpp
 	$(CXX) $(CXXFLAGS) $(CXXFLAGS_KNL) -c $< -o $@
+
+src/platform/nvidia.o: src/platform/nvidia.cpp
+ifdef NVCCAVAIL
+	nvcc $(NVCCFLAGS) $(CXXFLAGS_CUDA) -x cu -c $< -o $@ 
+else
+	$(CXX) $(CXXFLAGS) $(CXXFLAGS_CUDA) -c $< -o $@
+endif
 
 -include $(DEPS)
 

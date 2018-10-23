@@ -1,12 +1,11 @@
 #pragma once
 
-#include <algorithm>
-#include <array>
-#include <utility>
-
 #include "except.h"
 #include "stencil/basic.h"
 #include "stencil/basic_functors.h"
+#include <algorithm>
+#include <array>
+#include <utility>
 
 namespace backend {
     namespace openmp {
@@ -15,6 +14,13 @@ namespace backend {
             template <class Functor, class Allocator>
             class basic_base_blocked : public ::stencil::basic<Functor, Allocator> {
               public:
+                static void register_arguments(arguments &args) {
+                    ::stencil::basic<Functor, Allocator>::register_arguments(args);
+                    args.add({"i-blocksize", "block size in i-direction", "8"})
+                        .add({"j-blocksize", "block size in j-direction", "8"})
+                        .add({"k-blocksize", "block size in k-direction", "8"});
+                }
+
                 basic_base_blocked(const arguments_map &args)
                     : ::stencil::basic<Functor, Allocator>(args), m_iblocksize(args.get<int>("i-blocksize")),
                       m_jblocksize(args.get<int>("j-blocksize")), m_kblocksize(args.get<int>("k-blocksize")) {

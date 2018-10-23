@@ -17,16 +17,11 @@ class stencil_factory {
     template <class Stencil>
     void register_stencil(const std::string &platform,
         const std::string &backend,
-        const std::string &name,
-        const std::vector<std::tuple<std::string, std::string, std::string>> &args = {}) {
+        const std::string &name) {
         m_map[platform][backend][name] = [](const arguments_map &args) { return stencil_ptr(new Stencil(args)); };
 
         auto &sc = m_args.command(platform, "backend").command(backend, "stencil").command(name);
-        for (auto &arg : args) {
-            std::string name, description, default_value;
-            std::tie(name, description, default_value) = arg;
-            sc.add(name, description, default_value);
-        }
+        Stencil::register_arguments(sc);
     }
 
     stencil_ptr create(const arguments_map &args);

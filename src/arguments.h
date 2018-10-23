@@ -53,23 +53,24 @@ class arguments_map {
 
 std::ostream &operator<<(std::ostream &out, const arguments_map &argsmap);
 
-class arguments {
-    struct argument {
-        std::string name;
-        std::string description;
-        std::string default_value;
-    };
+struct argument {
+    std::string name;
+    std::string description;
+    std::string default_value;
+};
 
-    struct flag {
-        std::string name;
-        std::string description;
-    };
+struct flag {
+    std::string name;
+    std::string description;
+};
+
+class arguments {
 
   public:
     arguments(const std::string &command_name = "command", const std::string &subcommand_name = "subcommand");
 
-    arguments &add(const std::string &name, const std::string &description, const std::string &default_value = "");
-    arguments &add_flag(const std::string &name, const std::string &description);
+    arguments &add(const argument& a);
+    arguments &add(const flag& f);
 
     arguments &command(const std::string &command_name, const std::string &subcommand_name = "subcommand");
 
@@ -77,6 +78,7 @@ class arguments {
 
   private:
     void print_help() const;
+    void print_subcommands() const;
 
     std::string m_command_name, m_subcommand_name;
     std::vector<argument> m_args;

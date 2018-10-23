@@ -1,10 +1,8 @@
-#include <memory>
-
-#include "arguments.h"
 #include "platform/generic.h"
+#include "arguments.h"
+#include "backend/openmp.h"
 #include "real.h"
-
-#include "platform/openmp_helper.h"
+#include <memory>
 
 namespace platform {
     namespace generic {
@@ -13,7 +11,7 @@ namespace platform {
             using allocator = std::allocator<real>;
             const std::string platform = "generic";
 
-            register_openmp_stencils<allocator>(factory, platform);
+            backend::openmp::register_stencils<allocator>(factory, platform);
         }
 
     } // namespace generic

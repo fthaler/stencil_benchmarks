@@ -1,21 +1,20 @@
+#include "arguments.h"
+#include "except.h"
+#include "platform/generic.h"
+#include "platform/knl.h"
+#include "platform/nvidia.h"
+#include "stencil_execution.h"
+#include "stencil_factory.h"
+#include "table.h"
 #include <cstring>
 #include <fstream>
 #include <iostream>
 #include <sstream>
 
-#include "arguments.h"
-#include "except.h"
-#include "stencil_execution.h"
-#include "stencil_factory.h"
-#include "table.h"
-
-#include "platform/generic.h"
-#include "platform/knl.h"
-
 int main(int argc, char **argv) {
     arguments args(argv[0], "platform");
 
-    args.add("output", "output file", "stdout");
+    args.add({"output", "output file", "stdout"});
 
     stencil_execution::register_arguments(args);
 
@@ -23,6 +22,7 @@ int main(int argc, char **argv) {
 
     platform::generic::register_stencils(factory);
     platform::knl::register_stencils(factory);
+    platform::nvidia::register_stencils(factory);
 
     auto argsmap = args.parse(argc, argv);
 

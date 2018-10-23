@@ -7,6 +7,8 @@
 
 class stencil_execution {
   public:
+    static void register_arguments(arguments &args);
+
     stencil_execution(const arguments_map &args);
     virtual ~stencil_execution();
 
@@ -20,8 +22,6 @@ class stencil_execution {
     virtual std::size_t touched_bytes() const = 0;
 
     const field_info &info() const;
-
-    static void register_arguments(arguments &args);
 
   protected:
     template <class T, class Allocator>
