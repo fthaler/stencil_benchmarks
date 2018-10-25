@@ -15,8 +15,9 @@ namespace stencil {
             : stencil_execution(args), m_src(create_field<real, Allocator>()), m_dst(create_field<real, Allocator>()) {
             std::mt19937 eng;
             std::uniform_real_distribution<real> dist;
-            m_src->fill([&](int, int, int) { return dist(eng); });
-            m_dst->fill([&](int, int, int) { return dist(eng); });
+            auto rand = [&](int, int, int) { return dist(eng); };
+            m_src->fill(rand);
+            m_dst->fill(rand);
         }
 
         bool verify() override {

@@ -16,8 +16,6 @@ int main(int argc, char **argv) {
 
     args.add({"output", "output file", "stdout"});
 
-    stencil_execution::register_arguments(args);
-
     stencil_factory factory(args);
 
     platform::generic::register_stencils(factory);
@@ -51,6 +49,11 @@ int main(int argc, char **argv) {
       << "bandwidth";
     t << argsmap.get("stencil") << argsmap.get<int>("runs") << seconds << bandwidth;
     out << t;
+
+    if (!stencil->verify()) {
+        out << "WARNING: stencil verification failed!" << std::endl;
+        return 1;
+    }
 
     return 0;
 }

@@ -11,7 +11,7 @@ namespace backend {
             template <class Functor>
             __global__ void basic_1d_kernel(const Functor functor, const int ilast) {
                 const int ifirst = blockIdx.x * blockDim.x + threadIdx.x;
-                for (int i = ifirst; i < ilast; i += blockDim.x * gridDim.x) {
+                for (int i = ifirst; i <= ilast; i += blockDim.x * gridDim.x) {
                     functor(i);
                 }
             }

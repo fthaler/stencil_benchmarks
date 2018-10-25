@@ -2,7 +2,12 @@
 
 #include "backend/openmp/basic_stencils_1d.h"
 #include "backend/openmp/basic_stencils_blocked.h"
+#include "backend/openmp/hdiff_ijcache_blocked.h"
+#include "backend/openmp/hdiff_naive.h"
+#include "backend/openmp/hdiff_otf.h"
+#include "backend/openmp/hdiff_otf_blocked.h"
 #include "backend/util.h"
+#include "stencil_factory.h"
 
 namespace backend {
     namespace openmp {
@@ -30,6 +35,11 @@ namespace backend {
             REGISTER_STENCIL(basic_lapik_blocked);
             REGISTER_STENCIL(basic_lapjk_blocked);
             REGISTER_STENCIL(basic_lapijk_blocked);
+
+            REGISTER_STENCIL(hdiff_ijcache_blocked);
+            REGISTER_STENCIL(hdiff_naive);
+            REGISTER_STENCIL(hdiff_otf);
+            REGISTER_STENCIL(hdiff_otf_blocked);
 
 #undef REGISTER_STENCIL
         }
