@@ -1,7 +1,9 @@
 if (CMAKE_CXX_COMPILER_ID MATCHES "Intel")
-    set(SBENCH_PLATFORM_KNL_FLAGS "-xmic-avx512" CACHE STRING "KNL platform compiler flags")
+    set(SBENCH_PLATFORM_KNL_FLAGS "-xmic-avx512 -ffreestanding" CACHE STRING "KNL platform compiler flags")
 elseif (CMAKE_CXX_COMPILER_ID MATCHES "GNU")
-    set(SBENCH_PLATFORM_KNL_FLAGS "-Ofast -fvect-cost-model=unlimited -march=knl -mtune=knl" CACHE STRING "KNL platform flags")
+    set(SBENCH_PLATFORM_KNL_FLAGS "-Ofast -fvect-cost-model=unlimited -march=knl -mtune=knl" CACHE STRING "KNL platform compiler flags")
+elseif (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    set(SBENCH_PLATFORM_KNL_FLAGS "-Ofast -march=knl -mtune=knl" CACHE STRING "KNL platform compiler flags")
 endif()
 
 add_library(sbench-platform-knl knl.cpp)
