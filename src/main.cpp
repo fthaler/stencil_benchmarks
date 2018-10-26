@@ -1,8 +1,6 @@
 #include "arguments.h"
 #include "except.h"
-#include "platform/generic.h"
-#include "platform/knl.h"
-#include "platform/nvidia.h"
+#include "platform/platform.h"
 #include "stencil_execution.h"
 #include "stencil_factory.h"
 #include "table.h"
@@ -18,9 +16,7 @@ int main(int argc, char **argv) {
 
     stencil_factory factory(args);
 
-    platform::generic::register_stencils(factory);
-    platform::knl::register_stencils(factory);
-    platform::nvidia::register_stencils(factory);
+    platform::register_stencils(factory);
 
     auto argsmap = args.parse(argc, argv);
 

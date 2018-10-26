@@ -1,5 +1,6 @@
 #pragma once
 
+#include "backend/cuda/check.h"
 #include "except.h"
 #include "stencil/basic.h"
 #include "stencil/basic_functors.h"
@@ -76,8 +77,7 @@ namespace backend {
                     dim3 blocks(m_iblocks, m_jblocks, m_kblocks);
                     dim3 threads(m_ithreads, m_jthreads, m_kthreads);
                     basic_blocked_kernel<<<blocks, threads>>>(functor, isize, jsize, ksize, istride, jstride, kstride);
-                    if (cudaDeviceSynchronize() != cudaSuccess)
-                        throw ERROR("error in cudaDeviceSynchronize");
+                    CUDA_CHECK(cudaDeviceSynchronize());
                 }
 
               private:

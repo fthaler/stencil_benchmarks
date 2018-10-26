@@ -1,4 +1,4 @@
-#include "platform/knl.h"
+#include "platform/knl/knl.h"
 #include "backend/openmp.h"
 #include "platform/knl/allocator.h"
 #include "real.h"

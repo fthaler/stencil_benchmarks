@@ -40,7 +40,11 @@ namespace backend {
 
 #pragma omp parallel
                     {
+#if defined(__GNUC__) && __GNUC__ < 7
+#pragma omp for collapse(3)
+#else
 #pragma omp for simd collapse(3)
+#endif
                         for (int k = 0; k < ksize; ++k) {
                             for (int j = -2; j < jsize + 2; ++j) {
                                 for (int i = -2; i < isize + 2; ++i) {
@@ -52,7 +56,11 @@ namespace backend {
                             }
                         }
 
+#if defined(__GNUC__) && __GNUC__ < 7
+#pragma omp for collapse(3)
+#else
 #pragma omp for simd collapse(3)
+#endif
                         for (int k = 0; k < ksize; ++k) {
                             for (int j = 0; j < jsize; ++j) {
                                 for (int i = -1; i < isize + 1; ++i) {
@@ -64,7 +72,11 @@ namespace backend {
                             }
                         }
 
+#if defined(__GNUC__) && __GNUC__ < 7
+#pragma omp for collapse(3)
+#else
 #pragma omp for simd collapse(3)
+#endif
                         for (int k = 0; k < ksize; ++k) {
                             for (int j = -1; j < jsize + 1; ++j) {
                                 for (int i = 0; i < isize; ++i) {
@@ -76,7 +88,11 @@ namespace backend {
                             }
                         }
 
+#if defined(__GNUC__) && __GNUC__ < 7
+#pragma omp for collapse(3)
+#else
 #pragma omp for simd collapse(3)
+#endif
                         for (int k = 0; k < ksize; ++k) {
                             for (int j = 0; j < jsize; ++j) {
                                 for (int i = 0; i < isize; ++i) {

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "backend/cuda/check.h"
 #include "except.h"
 #include "stencil/basic.h"
 #include "stencil/basic_functors.h"
@@ -41,8 +42,9 @@ namespace backend {
                     Functor functor(this->info(), this->m_src->data(), this->m_dst->data());
 
                     basic_1d_kernel<<<m_blocks, m_threads>>>(functor, ilast);
-                    if (cudaDeviceSynchronize() != cudaSuccess)
-                        throw ERROR("error in cudaDeviceSynchronize");
+
+                    CUDA_CHECK(cudaGetLastError());
+                    CUDA_CHECK(cudaDeviceSynchronize());
                 }
 
               private:

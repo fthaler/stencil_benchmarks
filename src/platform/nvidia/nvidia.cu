@@ -1,5 +1,6 @@
 #include "backend/cuda.h"
 #include "platform/nvidia/allocator.h"
+#include "platform/nvidia/nvidia.h"
 #include "real.h"
 #include "stencil_factory.h"
 

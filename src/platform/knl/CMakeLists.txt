@@ -1,0 +1,9 @@
+if (CMAKE_CXX_COMPILER_ID MATCHES "Intel")
+    set(SBENCH_PLATFORM_KNL_FLAGS "-xmic-avx512" CACHE STRING "KNL platform compiler flags")
+elseif (CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+    set(SBENCH_PLATFORM_KNL_FLAGS "-Ofast -fvect-cost-model=unlimited -march=knl -mtune=knl" CACHE STRING "KNL platform flags")
+endif()
+
+add_library(sbench-platform-knl knl.cpp)
+target_compile_options(sbench-platform-knl PRIVATE "SHELL:${SBENCH_PLATFORM_KNL_FLAGS}")
+target_link_libraries(sbench-platform-knl PRIVATE sbench-lib OpenMP::OpenMP_CXX)

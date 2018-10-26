@@ -32,7 +32,11 @@ namespace backend {
                     const real *__restrict__ coeff = this->m_coeff->data();
                     real *__restrict__ dst = this->m_dst->data();
 
+#if defined(__GNUC__) && __GNUC__ < 7
+#pragma omp parallel for collapse(3)
+#else
 #pragma omp parallel for simd collapse(3)
+#endif
                     for (int k = 0; k < ksize; ++k) {
                         for (int j = 0; j < jsize; ++j) {
                             for (int i = 0; i < isize; ++i) {

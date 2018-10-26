@@ -5,6 +5,7 @@
 #ifdef __CUDACC__
 #include "backend/cuda/basic_stencils_1d.h"
 #include "backend/cuda/basic_stencils_blocked.h"
+#include "backend/cuda/hdiff_naive.h"
 #endif
 
 namespace backend {
@@ -37,6 +38,8 @@ namespace backend {
             REGISTER_STENCIL(basic_lapik_blocked);
             REGISTER_STENCIL(basic_lapjk_blocked);
             REGISTER_STENCIL(basic_lapijk_blocked);
+
+            REGISTER_STENCIL(hdiff_naive);
 
 #undef REGISTER_STENCIL
         }

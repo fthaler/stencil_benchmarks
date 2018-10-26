@@ -1,4 +1,4 @@
-#include "platform/generic.h"
+#include "platform/generic/generic.h"
 #include "arguments.h"
 #include "backend/openmp.h"
 #include "real.h"

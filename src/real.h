@@ -1,8 +1,9 @@
 #pragma once
 
+#include "config.h"
 #include <cmath>
 
-using real = FLOAT_TYPE;
+using real = SBENCH_FLOAT_TYPE;
 
 inline bool real_equal(float a, float b) {
     if (a == b) {

@@ -1,0 +1,6 @@
+#pragma once
+
+#cmakedefine SBENCH_FLOAT_TYPE ${SBENCH_FLOAT_TYPE};
+#cmakedefine SBENCH_WITH_PLATFORM_GENERIC
+#cmakedefine SBENCH_WITH_PLATFORM_KNL
+#cmakedefine SBENCH_WITH_PLATFORM_NVIDIA
