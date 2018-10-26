@@ -12,7 +12,6 @@ namespace backend {
 
         template <class Allocator>
         void register_stencils(stencil_factory &factory, const std::string &platform) {
-            using namespace stencil;
 #define REGISTER_STENCIL(stencil) \
     factory.register_stencil<stencil<Allocator>>(platform, "cuda", underscore_to_dash(#stencil));
 
