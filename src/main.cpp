@@ -12,7 +12,7 @@
 int main(int argc, char **argv) {
     arguments args(argv[0], "platform");
 
-    args.add({"output", "output file", "stdout"});
+    args.add({"output", "output file", "stdout"}).add(flag{"disable-verification", "disable verification of result"});
 
     stencil_factory factory(args);
 
@@ -46,7 +46,7 @@ int main(int argc, char **argv) {
     t << argsmap.get("stencil") << argsmap.get<int>("runs") << seconds << bandwidth;
     out << t;
 
-    if (!stencil->verify()) {
+    if (!argsmap.get_flag("disable-verification") && !stencil->verify()) {
         out << "WARNING: stencil verification failed!" << std::endl;
         return 1;
     }

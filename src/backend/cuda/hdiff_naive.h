@@ -112,42 +112,40 @@ namespace backend {
               public:
                 static void register_arguments(arguments &args) {
                     ::stencil::hdiff<Allocator>::register_arguments(args);
-                    args.add({"i-cuda-blocks", "CUDA blocks in i-direction", "8"})
-                        .add({"j-cuda-blocks", "CUDA blocks in j-direction", "8"})
-                        .add({"k-cuda-blocks", "CUDA blocks in k-direction", "8"})
-                        .add({"i-cuda-threads", "CUDA threads per block in i-direction", "8"})
-                        .add({"j-cuda-threads", "CUDA threads per block in j-direction", "8"})
-                        .add({"k-cuda-threads", "CUDA threads per block in k-direction", "8"});
+                    args.add({"i-blocks", "CUDA blocks in i-direction", "8"})
+                        .add({"j-blocks", "CUDA blocks in j-direction", "8"})
+                        .add({"k-blocks", "CUDA blocks in k-direction", "8"})
+                        .add({"i-threads", "CUDA threads per block in i-direction", "8"})
+                        .add({"j-threads", "CUDA threads per block in j-direction", "8"})
+                        .add({"k-threads", "CUDA threads per block in k-direction", "8"});
                 }
 
                 hdiff_naive(const arguments_map &args)
                     : ::stencil::hdiff<Allocator>(args), m_lap(this->template create_field<real, Allocator>()),
                       m_flx(this->template create_field<real, Allocator>()),
-                      m_fly(this->template create_field<real, Allocator>()), m_iblocks(args.get<int>("i-cuda-blocks")),
-                      m_jblocks(args.get<int>("j-cuda-blocks")), m_kblocks(args.get<int>("k-cuda-blocks")),
-                      m_ithreads(args.get<int>("i-cuda-threads")), m_jthreads(args.get<int>("j-cuda-threads")),
-                      m_kthreads(args.get<int>("k-cuda-threads")) {
+                      m_fly(this->template create_field<real, Allocator>()), m_iblocks(args.get<int>("i-blocks")),
+                      m_jblocks(args.get<int>("j-blocks")), m_kblocks(args.get<int>("k-blocks")),
+                      m_ithreads(args.get<int>("i-threads")), m_jthreads(args.get<int>("j-threads")),
+                      m_kthreads(args.get<int>("k-threads")) {
                     if (m_iblocks <= 0)
-                        throw ERROR("invalid i-cuda-blocks");
+                        throw ERROR("invalid i-blocks");
                     if (m_jblocks <= 0)
-                        throw ERROR("invalid j-cuda-blocks");
+                        throw ERROR("invalid j-blocks");
                     if (m_kblocks <= 0)
-                        throw ERROR("invalid k-cuda-blocks");
+                        throw ERROR("invalid k-blocks");
                     if (m_ithreads <= 0)
-                        throw ERROR("invalid i-cuda-threads");
+                        throw ERROR("invalid i-threads");
                     if (m_jthreads <= 0)
-                        throw ERROR("invalid j-cuda-threads");
+                        throw ERROR("invalid j-threads");
                     if (m_kthreads <= 0)
-                        throw ERROR("invalid k-cuda-threads");
+                        throw ERROR("invalid k-threads");
                 }
 
                 void run() override {
                     const int isize = this->info().isize();
                     const int jsize = this->info().jsize();
                     const int ksize = this->info().ksize();
-                    if (this->info().istride() != 1)
-                        throw ERROR("i-stride must be 1");
-                    constexpr int istride = 1;
+                    const int istride = this->info().istride();
                     const int jstride = this->info().jstride();
                     const int kstride = this->info().kstride();
 

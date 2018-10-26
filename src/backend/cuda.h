@@ -1,25 +1,20 @@
 #pragma once
 
-#include "stencil_factory.h"
-#include "util.h"
-#ifdef __CUDACC__
 #include "backend/cuda/basic_stencils_1d.h"
 #include "backend/cuda/basic_stencils_blocked.h"
 #include "backend/cuda/hdiff_naive.h"
-#endif
+#include "backend/cuda/hdiff_otf.h"
+#include "stencil_factory.h"
+#include "util.h"
 
 namespace backend {
     namespace cuda {
 
         template <class Allocator>
         void register_stencils(stencil_factory &factory, const std::string &platform) {
-#ifdef __CUDACC__
             using namespace stencil;
 #define REGISTER_STENCIL(stencil) \
     factory.register_stencil<stencil<Allocator>>(platform, "cuda", underscore_to_dash(#stencil));
-#else
-#define REGISTER_STENCIL(stencil)
-#endif
 
             REGISTER_STENCIL(basic_copy_1d);
             REGISTER_STENCIL(basic_avgi_1d);
@@ -40,6 +35,7 @@ namespace backend {
             REGISTER_STENCIL(basic_lapijk_blocked);
 
             REGISTER_STENCIL(hdiff_naive);
+            REGISTER_STENCIL(hdiff_otf);
 
 #undef REGISTER_STENCIL
         }

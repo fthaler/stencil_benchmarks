@@ -78,7 +78,7 @@ namespace stencil {
             const std::size_t isize = info().isize();
             const std::size_t jsize = info().jsize();
             const std::size_t ksize = info().ksize();
-            return isize * jsize * ksize * 2 * sizeof(real);
+            return isize * jsize * ksize * 3 * sizeof(real);
         }
 
       protected:
