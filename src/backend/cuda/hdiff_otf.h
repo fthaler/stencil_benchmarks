@@ -3,17 +3,16 @@
 #include "backend/cuda/allocator.h"
 #include "backend/cuda/check.h"
 #include "except.h"
-#include "stencil/basic.h"
-#include "stencil/basic_functors.h"
+#include "real.h"
+#include "stencil/hdiff.h"
 #include <algorithm>
-#include <array>
-#include <utility>
 
 namespace backend {
     namespace cuda {
 
-        template <class Functor>
-        __global__ void basic_blocked_kernel(const Functor functor,
+        __global__ void hdiff_otf_kernel(real *__restrict__ dst,
+            const real *__restrict__ src,
+            const real *__restrict__ coeff,
             const int isize,
             const int jsize,
             const int ksize,
@@ -24,20 +23,43 @@ namespace backend {
             const int jfirst = blockIdx.y * blockDim.y + threadIdx.y;
             const int kfirst = blockIdx.z * blockDim.z + threadIdx.z;
             for (int k = kfirst; k < ksize; k += blockDim.z * gridDim.z) {
-                for (int j = jfirst; j < jsize; j += blockDim.y * gridDim.y) {
-                    for (int i = ifirst; i < isize; i += blockDim.x * gridDim.x) {
+                for (int j = jfirst - 2; j < jsize + 2; j += blockDim.y * gridDim.y) {
+                    for (int i = ifirst - 2; i < isize + 2; i += blockDim.x * gridDim.x) {
                         const int index = i * istride + j * jstride + k * kstride;
-                        functor(index);
+
+                        real lap_ij = 4 * src[index] - src[index - istride] - src[index + istride] -
+                                      src[index - jstride] - src[index + jstride];
+                        real lap_imj = 4 * src[index - istride] - src[index - 2 * istride] - src[index] -
+                                       src[index - istride - jstride] - src[index - istride + jstride];
+                        real lap_ipj = 4 * src[index + istride] - src[index] - src[index + 2 * istride] -
+                                       src[index + istride - jstride] - src[index + istride + jstride];
+                        real lap_ijm = 4 * src[index - jstride] - src[index - istride - jstride] -
+                                       src[index + istride - jstride] - src[index - 2 * jstride] - src[index];
+                        real lap_ijp = 4 * src[index + jstride] - src[index - istride + jstride] -
+                                       src[index + istride + jstride] - src[index] - src[index + 2 * jstride];
+
+                        real flx_ij = lap_ipj - lap_ij;
+                        flx_ij = flx_ij * (src[index + istride] - src[index]) > 0 ? 0 : flx_ij;
+
+                        real flx_imj = lap_ij - lap_imj;
+                        flx_imj = flx_imj * (src[index] - src[index - istride]) > 0 ? 0 : flx_imj;
+
+                        real fly_ij = lap_ijp - lap_ij;
+                        fly_ij = fly_ij * (src[index + jstride] - src[index]) > 0 ? 0 : fly_ij;
+
+                        real fly_ijm = lap_ij - lap_ijm;
+                        fly_ijm = fly_ijm * (src[index] - src[index - jstride]) > 0 ? 0 : fly_ijm;
+
+                        dst[index] = src[index] - coeff[index] * (flx_ij - flx_imj + fly_ij - fly_ijm);
                     }
                 }
             }
         }
 
-        template <class Functor>
-        class basic_base_blocked : public stencil::basic<Functor, allocator<real>> {
+        class hdiff_otf : public stencil::hdiff<allocator<real>> {
           public:
             static void register_arguments(arguments &args) {
-                stencil::basic<Functor, allocator<real>>::register_arguments(args);
+                stencil::hdiff<allocator<real>>::register_arguments(args);
                 args.add({"i-blocks", "CUDA blocks in i-direction", "8"})
                     .add({"j-blocks", "CUDA blocks in j-direction", "8"})
                     .add({"k-blocks", "CUDA blocks in k-direction", "8"})
@@ -46,8 +68,8 @@ namespace backend {
                     .add({"k-threads", "CUDA threads per block in k-direction", "8"});
             }
 
-            basic_base_blocked(const arguments_map &args)
-                : stencil::basic<Functor, allocator<real>>(args), m_iblocks(args.get<int>("i-blocks")),
+            hdiff_otf(const arguments_map &args)
+                : stencil::hdiff<allocator<real>>(args), m_iblocks(args.get<int>("i-blocks")),
                   m_jblocks(args.get<int>("j-blocks")), m_kblocks(args.get<int>("k-blocks")),
                   m_ithreads(args.get<int>("i-threads")), m_jthreads(args.get<int>("j-threads")),
                   m_kthreads(args.get<int>("k-threads")) {
@@ -72,11 +94,17 @@ namespace backend {
                 const int istride = this->info().istride();
                 const int jstride = this->info().jstride();
                 const int kstride = this->info().kstride();
-                Functor functor(this->info(), this->m_src->data(), this->m_dst->data());
+
+                const real *__restrict__ src = this->m_src->data();
+                const real *__restrict__ coeff = this->m_coeff->data();
+                real *__restrict__ dst = this->m_dst->data();
 
                 dim3 blocks(m_iblocks, m_jblocks, m_kblocks);
                 dim3 threads(m_ithreads, m_jthreads, m_kthreads);
-                basic_blocked_kernel<<<blocks, threads>>>(functor, isize, jsize, ksize, istride, jstride, kstride);
+
+                hdiff_otf_kernel<<<blocks, threads>>>(dst, src, coeff, isize, jsize, ksize, istride, jstride, kstride);
+
+                CUDA_CHECK(cudaGetLastError());
                 CUDA_CHECK(cudaDeviceSynchronize());
             }
 
@@ -85,15 +113,5 @@ namespace backend {
             int m_ithreads, m_jthreads, m_kthreads;
         };
 
-        using basic_copy_blocked = basic_base_blocked<stencil::copy_functor>;
-
-        using basic_avgi_blocked = basic_base_blocked<stencil::avgi_functor>;
-        using basic_avgj_blocked = basic_base_blocked<stencil::avgj_functor>;
-        using basic_avgk_blocked = basic_base_blocked<stencil::avgk_functor>;
-
-        using basic_lapij_blocked = basic_base_blocked<stencil::lapij_functor>;
-        using basic_lapik_blocked = basic_base_blocked<stencil::lapik_functor>;
-        using basic_lapjk_blocked = basic_base_blocked<stencil::lapjk_functor>;
-        using basic_lapijk_blocked = basic_base_blocked<stencil::lapijk_functor>;
     } // namespace cuda
 } // namespace backend

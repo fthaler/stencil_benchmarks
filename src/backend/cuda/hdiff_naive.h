@@ -1,5 +1,6 @@
 #pragma once
 
+#include "backend/cuda/allocator.h"
 #include "backend/cuda/check.h"
 #include "except.h"
 #include "real.h"
@@ -106,11 +107,10 @@ namespace backend {
             }
         }
 
-        template <class Allocator>
-        class hdiff_naive : public stencil::hdiff<Allocator> {
+        class hdiff_naive : public stencil::hdiff<allocator<real>> {
           public:
             static void register_arguments(arguments &args) {
-                stencil::hdiff<Allocator>::register_arguments(args);
+                stencil::hdiff<allocator<real>>::register_arguments(args);
                 args.add({"i-blocks", "CUDA blocks in i-direction", "8"})
                     .add({"j-blocks", "CUDA blocks in j-direction", "8"})
                     .add({"k-blocks", "CUDA blocks in k-direction", "8"})
@@ -120,9 +120,9 @@ namespace backend {
             }
 
             hdiff_naive(const arguments_map &args)
-                : stencil::hdiff<Allocator>(args), m_lap(this->template create_field<real, Allocator>()),
-                  m_flx(this->template create_field<real, Allocator>()),
-                  m_fly(this->template create_field<real, Allocator>()), m_iblocks(args.get<int>("i-blocks")),
+                : stencil::hdiff<allocator<real>>(args), m_lap(this->create_field<real, allocator<real>>()),
+                  m_flx(this->template create_field<real, allocator<real>>()),
+                  m_fly(this->template create_field<real, allocator<real>>()), m_iblocks(args.get<int>("i-blocks")),
                   m_jblocks(args.get<int>("j-blocks")), m_kblocks(args.get<int>("k-blocks")),
                   m_ithreads(args.get<int>("i-threads")), m_jthreads(args.get<int>("j-threads")),
                   m_kthreads(args.get<int>("k-threads")) {
@@ -171,7 +171,7 @@ namespace backend {
             }
 
           private:
-            field_ptr<real, Allocator> m_lap, m_flx, m_fly;
+            field_ptr<real, allocator<real>> m_lap, m_flx, m_fly;
             int m_iblocks, m_jblocks, m_kblocks;
             int m_ithreads, m_jthreads, m_kthreads;
         };

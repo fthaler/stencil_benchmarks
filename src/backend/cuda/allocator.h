@@ -1,19 +1,17 @@
 #pragma once
 
-#include <cuda_runtime.h>
-
 #include "except.h"
 
-namespace platform {
-    namespace nvidia {
+namespace backend {
+    namespace cuda {
 
         template <class ValueType>
-        struct cuda_allocator {
+        struct allocator {
             using value_type = ValueType;
 
             template <class OtherValueType>
             struct rebind {
-                using other = cuda_allocator<OtherValueType>;
+                using other = allocator<OtherValueType>;
             };
 
             value_type *allocate(std::size_t n) const {
@@ -28,5 +26,5 @@ namespace platform {
                     throw ERROR("could not free managed memory");
             }
         };
-    } // namespace nvidia
-} // namespace platform
+    } // namespace cuda
+} // namespace backend
