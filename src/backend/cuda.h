@@ -1,7 +1,7 @@
 #pragma once
 
-#include "backend/util.h"
 #include "stencil_factory.h"
+#include "util.h"
 #ifdef __CUDACC__
 #include "backend/cuda/basic_stencils_1d.h"
 #include "backend/cuda/basic_stencils_blocked.h"

@@ -6,8 +6,8 @@
 #include "backend/openmp/hdiff_naive.h"
 #include "backend/openmp/hdiff_otf.h"
 #include "backend/openmp/hdiff_otf_blocked.h"
-#include "backend/util.h"
 #include "stencil_factory.h"
+#include "util.h"
 
 namespace backend {
     namespace openmp {
