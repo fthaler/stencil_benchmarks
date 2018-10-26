@@ -26,7 +26,6 @@ Makefile.user
 # Output files
 *.dat
 *.csv
-*.txt
 *.out
 *.png
 *.svg
