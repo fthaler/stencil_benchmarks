@@ -18,8 +18,7 @@ namespace backend {
           private:
             static constexpr int block_halo = 2;
 
-            int m_iblocksize, m_jblocksize, m_kblocks;
-            int m_kthreads;
+            int m_iblocksize, m_jblocksize, m_kblocksize;
         };
 
     } // namespace cuda
