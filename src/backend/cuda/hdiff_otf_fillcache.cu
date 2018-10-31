@@ -69,21 +69,11 @@ namespace backend {
 
         void hdiff_otf_fillcache::register_arguments(arguments &args) {
             stencil::hdiff<allocator<real>>::register_arguments(args);
-            args.add({"i-blocksize", "block size in i-direction", "32"})
-                .add({"j-blocksize", "block size in j-direction", "8"})
-                .add({"k-blocksize", "block size in k-direction", "1"});
+            blocked_execution<block_halo>::register_arguments(args);
         }
 
         hdiff_otf_fillcache::hdiff_otf_fillcache(const arguments_map &args)
-            : stencil::hdiff<allocator<real>>(args), m_iblocksize(args.get<int>("i-blocksize")),
-              m_jblocksize(args.get<int>("j-blocksize")), m_kblocksize(args.get<int>("k-blocksize")) {
-            if (m_iblocksize <= 0)
-                throw ERROR("invalid i-blocksize");
-            if (m_jblocksize <= 0)
-                throw ERROR("invalid j-blocksize");
-            if (m_kblocksize <= 0)
-                throw ERROR("invalid k-blocksize");
-        }
+            : stencil::hdiff<allocator<real>>(args), m_blocked_execution(args) {}
 
         void hdiff_otf_fillcache::run() {
             const int isize = this->info().isize();
@@ -97,11 +87,9 @@ namespace backend {
             const real *__restrict__ coeff = this->m_coeff->data();
             real *__restrict__ dst = this->m_dst->data();
 
-            block_index_helper<block_index<2>> helper(isize, jsize, ksize, m_iblocksize, m_jblocksize, m_kblocksize);
+            auto p = m_blocked_execution.kernel_parameters(isize, jsize, ksize);
 
-            hdiff_otf_fillcache_kernel<<<helper.blocks(),
-                helper.threads(),
-                helper.blocksize_with_halo() * sizeof(real)>>>(
+            hdiff_otf_fillcache_kernel<<<p.blocks(), p.threads(), p.blocksize_with_halo() * sizeof(real)>>>(
                 dst, src, coeff, isize, jsize, ksize, istride, jstride, kstride);
 
             CUDA_CHECK(cudaGetLastError());

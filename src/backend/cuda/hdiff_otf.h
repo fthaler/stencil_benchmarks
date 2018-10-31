@@ -1,6 +1,7 @@
 #pragma once
 
 #include "backend/cuda/allocator.h"
+#include "backend/cuda/blocked_execution.h"
 #include "real.h"
 #include "stencil/hdiff.h"
 
@@ -16,8 +17,7 @@ namespace backend {
             void run() override;
 
           private:
-            int m_iblocks, m_jblocks, m_kblocks;
-            int m_ithreads, m_jthreads, m_kthreads;
+            blocked_execution<0> m_blocked_execution;
         };
 
     } // namespace cuda

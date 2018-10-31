@@ -23,30 +23,7 @@ namespace backend {
                 : iblocksize(blockDim.x), jblocksize(blockDim.y - jminus_halo - jplus_halo - (iminus_halo > 0 ? 1 : 0) -
                                                      (iplus_halo > 0 ? 1 : 0)),
                   kblocksize(blockDim.z) {
-                if (iminus_halo == 0 && iplus_halo == 0 && jminus_halo == 0 && jplus_halo == 0) {
-                    iblock = threadIdx.x;
-                    jblock = threadIdx.y;
-                } else {
-                    const int jboundary_limit = jblocksize + jminus_halo + jplus_halo;
-                    const int iminus_limit = jboundary_limit + (iminus_halo > 0 ? 1 : 0);
-                    const int iplus_limit = iminus_limit + (iplus_halo > 0 ? 1 : 0);
-
-                    iblock = -iminus_halo - 1;
-                    jblock = -jminus_halo - 1;
-                    if (threadIdx.y < jboundary_limit) {
-                        iblock = threadIdx.x;
-                        jblock = threadIdx.y - jminus_halo;
-                    } else if (threadIdx.y < iminus_limit) {
-                        constexpr int pad = block_halo_padding(iminus_halo);
-                        iblock = -pad + int(threadIdx.x) % pad;
-                        jblock = int(threadIdx.x) / pad - jminus_halo;
-                    } else if (threadIdx.y < iplus_limit) {
-                        constexpr int pad = block_halo_padding(iplus_halo);
-                        iblock = int(threadIdx.x) % pad + iblocksize;
-                        jblock = int(threadIdx.x) / pad - jminus_halo;
-                    }
-                }
-                kblock = threadIdx.z;
+                compute_block_indices();
                 const int iblockbase = blockIdx.x * iblocksize;
                 const int jblockbase = blockIdx.y * jblocksize;
                 const int kblockbase = blockIdx.z * kblocksize;
@@ -75,14 +52,44 @@ namespace backend {
             }
 
           private:
+            template <bool AllZero = (iminus_halo == 0 && iplus_halo == 0 && jminus_halo == 0 && jplus_halo == 0)>
+            __device__ typename std::enable_if<AllZero>::type compute_block_indices() {
+                iblock = threadIdx.x;
+                jblock = threadIdx.y;
+                kblock = threadIdx.z;
+            }
+
+            template <bool AllZero = (iminus_halo == 0 && iplus_halo == 0 && jminus_halo == 0 && jplus_halo == 0)>
+            __device__ typename std::enable_if<!AllZero>::type compute_block_indices() {
+                const int jboundary_limit = jblocksize + jminus_halo + jplus_halo;
+                const int iminus_limit = jboundary_limit + (iminus_halo > 0 ? 1 : 0);
+                const int iplus_limit = iminus_limit + (iplus_halo > 0 ? 1 : 0);
+
+                iblock = -iminus_halo - 1;
+                jblock = -jminus_halo - 1;
+                if (threadIdx.y < jboundary_limit) {
+                    iblock = threadIdx.x;
+                    jblock = threadIdx.y - jminus_halo;
+                } else if (threadIdx.y < iminus_limit) {
+                    constexpr int pad = block_halo_padding(iminus_halo);
+                    iblock = -pad + int(threadIdx.x) % pad;
+                    jblock = int(threadIdx.x) / pad - jminus_halo;
+                } else if (threadIdx.y < iplus_limit) {
+                    constexpr int pad = block_halo_padding(iplus_halo);
+                    iblock = int(threadIdx.x) % pad + iblocksize;
+                    jblock = int(threadIdx.x) / pad - jminus_halo;
+                }
+                kblock = threadIdx.z;
+            }
+
             __device__ static constexpr int block_halo_padding(int x) {
-                return x == 1 ? 1 : 2 * block_halo_padding((x + 1) / 2);
+                return x == 0 ? 0 : x == 1 ? 1 : 2 * block_halo_padding((x + 1) / 2);
             }
         };
 
         template <class BlockIndex>
-        struct block_index_helper {
-            block_index_helper(int isize, int jsize, int ksize, int iblocksize, int jblocksize, int kblocksize)
+        struct runtime_parameters {
+            runtime_parameters(int isize, int jsize, int ksize, int iblocksize, int jblocksize, int kblocksize)
                 : m_isize(isize), m_jsize(jsize), m_ksize(ksize), m_iblocksize(iblocksize), m_jblocksize(jblocksize),
                   m_kblocksize(kblocksize) {
                 constexpr int max_i_halo =

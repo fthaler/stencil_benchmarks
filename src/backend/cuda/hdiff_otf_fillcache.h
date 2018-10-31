@@ -1,6 +1,7 @@
 #pragma once
 
 #include "backend/cuda/allocator.h"
+#include "backend/cuda/blocked_execution.h"
 #include "real.h"
 #include "stencil/hdiff.h"
 
@@ -18,7 +19,7 @@ namespace backend {
           private:
             static constexpr int block_halo = 2;
 
-            int m_iblocksize, m_jblocksize, m_kblocksize;
+            blocked_execution<block_halo> m_blocked_execution;
         };
 
     } // namespace cuda
