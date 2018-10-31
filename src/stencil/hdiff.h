@@ -68,7 +68,7 @@ namespace stencil {
                     src(i, j, k) - coeff(i, j, k) * (flx(i, j, k) - flx(i - 1, j, k) + fly(i, j, k) - fly(i, j - 1, k));
                 if (!real_equal(ref(i, j, k), dst(i, j, k))) {
 #pragma omp critical
-                    std::cout << i << " " << j << " " << k << ref(i, j, k) << " " << dst(i, j, k) << std::endl;
+                    std::cout << i << " " << j << " " << k << " " << ref(i, j, k) << " " << dst(i, j, k) << std::endl;
                 }
                 return real_equal(ref(i, j, k), dst(i, j, k));
             });
