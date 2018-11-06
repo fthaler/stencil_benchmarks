@@ -10,6 +10,8 @@ namespace backend {
 
         class hdiff_otf : public stencil::hdiff<allocator<real>> {
           public:
+            using blocked_execution_t = blocked_execution<0>;
+
             static void register_arguments(arguments &args);
 
             hdiff_otf(const arguments_map &args);
@@ -17,7 +19,7 @@ namespace backend {
             void run() override;
 
           private:
-            blocked_execution<0> m_blocked_execution;
+            blocked_execution_t m_blocked_execution;
         };
 
     } // namespace cuda

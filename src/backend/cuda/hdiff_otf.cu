@@ -1,4 +1,4 @@
-#include "backend/cuda/block_index.h"
+#include "backend/cuda/blocked_execution.h"
 #include "backend/cuda/check.h"
 #include "backend/cuda/hdiff_otf.h"
 #include "except.h"
@@ -15,7 +15,9 @@ namespace backend {
             const int istride,
             const int jstride,
             const int kstride) {
-            block_index<0> bidx(isize, jsize, ksize);
+            using block_index_t = hdiff_otf::blocked_execution_t::block_index_t;
+
+            const block_index_t bidx(isize, jsize, ksize);
             const int index = bidx.i * istride + bidx.j * jstride + bidx.k * kstride;
 
             if (bidx.in_block()) {
@@ -48,7 +50,7 @@ namespace backend {
 
         void hdiff_otf::register_arguments(arguments &args) {
             stencil::hdiff<allocator<real>>::register_arguments(args);
-            blocked_execution<0>::register_arguments(args);
+            blocked_execution_t::register_arguments(args);
         }
 
         hdiff_otf::hdiff_otf(const arguments_map &args)
@@ -66,8 +68,7 @@ namespace backend {
             const real *__restrict__ coeff = this->m_coeff->data();
             real *__restrict__ dst = this->m_dst->data();
 
-            auto p = m_blocked_execution.kernel_parameters(isize, jsize, ksize);
-            hdiff_otf_kernel<<<p.blocks(), p.threads()>>>(
+            hdiff_otf_kernel<<<m_blocked_execution.blocks(), m_blocked_execution.threads()>>>(
                 dst, src, coeff, isize, jsize, ksize, istride, jstride, kstride);
 
             CUDA_CHECK(cudaGetLastError());

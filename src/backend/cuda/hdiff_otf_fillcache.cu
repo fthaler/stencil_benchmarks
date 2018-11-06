@@ -14,9 +14,10 @@ namespace backend {
             const int istride,
             const int jstride,
             const int kstride) {
+            using block_index_t = hdiff_otf_fillcache::blocked_execution_t::block_index_t;
 
-            constexpr int block_halo = 2;
-            const block_index<block_halo> bidx(isize, jsize, ksize);
+            const block_index_t bidx(isize, jsize, ksize);
+            constexpr int block_halo = block_index_t::halo();
 
             constexpr int icachestride = 1;
             const int jcachestride = (bidx.iblocksize + 2 * block_halo) * icachestride;
@@ -69,7 +70,7 @@ namespace backend {
 
         void hdiff_otf_fillcache::register_arguments(arguments &args) {
             stencil::hdiff<allocator<real>>::register_arguments(args);
-            blocked_execution<block_halo>::register_arguments(args);
+            blocked_execution_t::register_arguments(args);
         }
 
         hdiff_otf_fillcache::hdiff_otf_fillcache(const arguments_map &args)
@@ -87,9 +88,9 @@ namespace backend {
             const real *__restrict__ coeff = this->m_coeff->data();
             real *__restrict__ dst = this->m_dst->data();
 
-            auto p = m_blocked_execution.kernel_parameters(isize, jsize, ksize);
-
-            hdiff_otf_fillcache_kernel<<<p.blocks(), p.threads(), p.blocksize_with_halo() * sizeof(real)>>>(
+            hdiff_otf_fillcache_kernel<<<m_blocked_execution.blocks(),
+                m_blocked_execution.threads(),
+                m_blocked_execution.blocksize_with_halo() * sizeof(real)>>>(
                 dst, src, coeff, isize, jsize, ksize, istride, jstride, kstride);
 
             CUDA_CHECK(cudaGetLastError());
