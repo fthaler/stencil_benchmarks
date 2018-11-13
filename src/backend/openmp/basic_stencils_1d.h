@@ -17,7 +17,7 @@ namespace backend {
 
             void run() override {
                 const int ilast = this->info().last_index();
-                Functor functor(this->info(), this->m_src->data(), this->m_dst->data());
+                const Functor functor(this->info(), this->m_src->data(), this->m_dst->data());
 
 #if defined(__GNUC__) && __GNUC__ < 7
 #pragma omp parallel for
