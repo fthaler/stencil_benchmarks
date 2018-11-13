@@ -1,5 +1,6 @@
 #pragma once
 
+#include "backend/openmp/blocked_execution.h"
 #include "except.h"
 #include "real.h"
 #include "stencil/hdiff.h"
@@ -15,45 +16,37 @@ namespace backend {
 
             static void register_arguments(arguments &args) {
                 stencil::hdiff<Allocator>::register_arguments(args);
-                args.add({"i-blocksize", "block size in i-direction", "32"})
-                    .add({"j-blocksize", "block size in j-direction", "32"});
+                blocked_execution_2d::register_arguments(args);
             }
 
-            hdiff_otf_blocked(const arguments_map &args)
-                : stencil::hdiff<Allocator>(args), m_iblocksize(args.get<int>("i-blocksize")),
-                  m_jblocksize(args.get<int>("j-blocksize")) {
-                if (m_iblocksize <= 0)
-                    throw ERROR("invalid i-blocksize");
-                if (m_jblocksize <= 0)
-                    throw ERROR("invalid j-blocksize");
-            }
+            hdiff_otf_blocked(const arguments_map &args) : stencil::hdiff<Allocator>(args), m_blocked_execution(args) {}
 
             void run() override {
-                const int isize = this->info().isize();
-                const int jsize = this->info().jsize();
-                const int ksize = this->info().ksize();
-                if (this->info().istride() != 1)
-                    throw ERROR("i-stride must be 1");
-                constexpr int istride = 1;
-                const int jstride = this->info().jstride();
-                const int kstride = this->info().kstride();
-
                 const real *__restrict__ src = this->m_src->data();
                 const real *__restrict__ coeff = this->m_coeff->data();
                 real *__restrict__ dst = this->m_dst->data();
 
+                const int ksize = this->info().ksize();
+                const int istride = this->info().istride();
+                const int jstride = this->info().jstride();
+                const int kstride = this->info().kstride();
+                auto block = m_blocked_execution.block(istride, jstride);
+
+                if (block.inner.stride != 1)
+                    throw ERROR("data must be contiguous along i- or j-axis");
+
 #pragma omp parallel for collapse(3)
                 for (int k = 0; k < ksize; ++k) {
-                    for (int jb = 0; jb < jsize; jb += m_jblocksize) {
-                        for (int ib = 0; ib < isize; ib += m_iblocksize) {
-                            int index = ib * istride + jb * jstride + k * kstride;
-                            const int imax = std::min(ib + m_iblocksize, isize);
-                            const int jmax = std::min(jb + m_jblocksize, jsize);
+                    for (int outer_ib = 0; outer_ib < block.outer.size; outer_ib += block.outer.blocksize) {
+                        for (int inner_ib = 0; inner_ib < block.inner.size; inner_ib += block.inner.blocksize) {
+                            int index = inner_ib * block.inner.stride + outer_ib * block.outer.stride + k * kstride;
+                            const int inner_max = std::min(inner_ib + block.inner.blocksize, block.inner.size);
+                            const int outer_max = std::min(outer_ib + block.outer.blocksize, block.outer.size);
 
-                            for (int j = jb; j < jmax; ++j) {
+                            for (int outer_i = outer_ib; outer_i < outer_max; ++outer_i) {
 #pragma omp simd
 #pragma vector nontemporal
-                                for (int i = ib; i < imax; ++i) {
+                                for (int inner_i = inner_ib; inner_i < inner_max; ++inner_i) {
                                     real lap_ij = 4 * src[index] - src[index - istride] - src[index + istride] -
                                                   src[index - jstride] - src[index + jstride];
                                     real lap_imj = 4 * src[index - istride] - src[index - 2 * istride] - src[index] -
@@ -80,9 +73,9 @@ namespace backend {
                                     fly_ijm = fly_ijm * (src[index] - src[index - jstride]) > 0 ? 0 : fly_ijm;
 
                                     dst[index] = src[index] - coeff[index] * (flx_ij - flx_imj + fly_ij - fly_ijm);
-                                    index += istride;
+                                    ++index;
                                 }
-                                index += jstride - (imax - ib) * istride;
+                                index += block.outer.stride - (inner_max - inner_ib);
                             }
                         }
                     }
@@ -90,7 +83,7 @@ namespace backend {
             }
 
           private:
-            int m_iblocksize, m_jblocksize;
+            blocked_execution_2d m_blocked_execution;
         };
     } // namespace openmp
 } // namespace backend
