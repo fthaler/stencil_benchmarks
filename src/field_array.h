@@ -6,6 +6,8 @@
 template <class T, class Allocator = std::allocator<T>>
 class field_array {
   public:
+    using iterator = typename std::vector<T, Allocator>::iterator;
+
     field_array(const field_info &info, std::size_t size);
     virtual ~field_array() {}
 
@@ -18,6 +20,9 @@ class field_array {
     void cycle();
 
     void fill(std::function<T(int, int, int)> f);
+
+    iterator begin() { return m_data[m_current].begin(); }
+    iterator end() { return m_data[m_current].end(); }
 
   private:
     std::vector<std::vector<T, Allocator>> m_data;
