@@ -12,8 +12,6 @@ namespace backend {
         template <class Allocator>
         class hdiff_otf_blocked : public stencil::hdiff<Allocator> {
           public:
-            using stencil::hdiff<Allocator>::hdiff;
-
             static void register_arguments(arguments &args) {
                 stencil::hdiff<Allocator>::register_arguments(args);
                 blocked_execution_2d::register_arguments(args);
