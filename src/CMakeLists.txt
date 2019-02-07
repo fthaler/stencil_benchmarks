@@ -16,6 +16,7 @@ configure_file(config.h.in config.h)
 
 add_executable(sbench main.cpp)
 add_library(sbench-lib "${SBENCH_LIB_SOURCES}")
+target_link_libraries(sbench-lib PRIVATE OpenMP::OpenMP_CXX)
 
 if (SBENCH_WITH_PLATFORM_GENERIC)
     add_subdirectory(platform/generic)
