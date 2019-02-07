@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.9)
 
-project(sbench VERSION 0.1)
+project(sbench VERSION 0.0.0)
 enable_language(CXX)
 
 # Build-time configuration
