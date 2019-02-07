@@ -1,4 +1,4 @@
 def FlagsForFile( filename, **kwargs ):
   return {
-    'flags': ['-x', 'c++', '-std=c++14', '-I', 'src', '-fopenmp', '-DFLOAT_TYPE=float'],
+    'flags': ['-x', 'c++', '-std=c++14', '-I', 'src', '-fopenmp', '-DSBENCH_FLOAT_TYPE=float'],
   }
