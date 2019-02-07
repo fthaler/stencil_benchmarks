@@ -7,14 +7,14 @@
 namespace backend {
     namespace openmp {
         template <class Allocator>
-        class vadv_ij_blocked : public vadv_stencil_base<Allocator> {
+        class vadv_kcache_blocked : public vadv_stencil_base<Allocator> {
           public:
             static void register_arguments(arguments &args) {
                 vadv_stencil_base<Allocator>::register_arguments(args);
                 blocked_execution_2d::register_arguments(args);
             }
 
-            vadv_ij_blocked(const arguments_map &args)
+            vadv_kcache_blocked(const arguments_map &args)
                 : vadv_stencil_base<Allocator>(args), m_blocked_execution(args) {}
 
             void run() override {
