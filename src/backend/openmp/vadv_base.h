@@ -26,7 +26,6 @@ namespace backend {
                 const int istride,
                 const int jstride,
                 const int kstride) {
-
                 const int k = ksize - 1;
                 const int index = i * istride + j * jstride + k * kstride;
                 const int datacol_index = i * istride + j * jstride;
@@ -34,18 +33,18 @@ namespace backend {
                 utensstage[index] = this->dtr_stage * (datacol[datacol_index] - upos[index]);
             }
 
-            [[gnu::always_inline]] void backward_sweep_kbody(const int i,
-                const int j,
-                const int k,
-                const real *__restrict__ ccol,
-                const real *__restrict__ dcol,
-                real *__restrict__ datacol,
-                const real *__restrict__ upos,
-                real *__restrict__ utensstage,
-                const int ksize,
-                const int istride,
-                const int jstride,
-                const int kstride) {
+                [[gnu::always_inline]] void backward_sweep_kbody(const int i,
+                    const int j,
+                    const int k,
+                    const real *__restrict__ ccol,
+                    const real *__restrict__ dcol,
+                    real *__restrict__ datacol,
+                    const real *__restrict__ upos,
+                    real *__restrict__ utensstage,
+                    const int ksize,
+                    const int istride,
+                    const int jstride,
+                    const int kstride) {
 
                 const int index = i * istride + j * jstride + k * kstride;
                 const int datacol_index = i * istride + j * jstride;
@@ -95,18 +94,18 @@ namespace backend {
                 }
             }
 
-            [[gnu::always_inline]] void backward_sweep_k(const int i,
-                const int j,
-                const int k,
-                const real *__restrict__ ccol,
-                const real *__restrict__ dcol,
-                real *__restrict__ datacol,
-                const real *__restrict__ upos,
-                real *__restrict__ utensstage,
-                const int ksize,
-                const int istride,
-                const int jstride,
-                const int kstride) {
+                [[gnu::always_inline]] void backward_sweep_k(const int i,
+                    const int j,
+                    const int k,
+                    const real *__restrict__ ccol,
+                    const real *__restrict__ dcol,
+                    real *__restrict__ datacol,
+                    const real *__restrict__ upos,
+                    real *__restrict__ utensstage,
+                    const int ksize,
+                    const int istride,
+                    const int jstride,
+                    const int kstride) {
                 constexpr real dtr_stage = 3.0 / 20.0;
 
                 if (k == ksize - 1) {
@@ -132,7 +131,6 @@ namespace backend {
                 const int istride,
                 const int jstride,
                 const int kstride) {
-
                 const int k = 0;
                 const int index = i * istride + j * jstride + k * kstride;
                 real gcv =
@@ -150,22 +148,22 @@ namespace backend {
                 dcol[index] = dcol[index] * divided;
             }
 
-            [[gnu::always_inline]] void forward_sweep_kbody(const int i,
-                const int j,
-                const int k,
-                const int ishift,
-                const int jshift,
-                real *__restrict__ ccol,
-                real *__restrict__ dcol,
-                const real *__restrict__ wcon,
-                const real *__restrict__ ustage,
-                const real *__restrict__ upos,
-                const real *__restrict__ utens,
-                const real *__restrict__ utensstage,
-                const int ksize,
-                const int istride,
-                const int jstride,
-                const int kstride) {
+                [[gnu::always_inline]] void forward_sweep_kbody(const int i,
+                    const int j,
+                    const int k,
+                    const int ishift,
+                    const int jshift,
+                    real *__restrict__ ccol,
+                    real *__restrict__ dcol,
+                    const real *__restrict__ wcon,
+                    const real *__restrict__ ustage,
+                    const real *__restrict__ upos,
+                    const real *__restrict__ utens,
+                    const real *__restrict__ utensstage,
+                    const int ksize,
+                    const int istride,
+                    const int jstride,
+                    const int kstride) {
 
                 const int index = i * istride + j * jstride + k * kstride;
                 real gav = real(-0.25) * (wcon[index + ishift * istride + jshift * jstride] + wcon[index]);
@@ -203,7 +201,6 @@ namespace backend {
                 const int istride,
                 const int jstride,
                 const int kstride) {
-
                 const int k = ksize - 1;
                 const int index = i * istride + j * jstride + k * kstride;
                 real gav = real(-0.25) * (wcon[index + ishift * istride + jshift * jstride] + wcon[index]);
@@ -220,22 +217,22 @@ namespace backend {
                 dcol[index] = (dcol[index] - dcol[index - kstride] * acol) * divided;
             }
 
-            [[gnu::always_inline]] void forward_sweep_k(const int i,
-                const int j,
-                const int k,
-                const int ishift,
-                const int jshift,
-                real *__restrict__ ccol,
-                real *__restrict__ dcol,
-                const real *__restrict__ wcon,
-                const real *__restrict__ ustage,
-                const real *__restrict__ upos,
-                const real *__restrict__ utens,
-                const real *__restrict__ utensstage,
-                const int ksize,
-                const int istride,
-                const int jstride,
-                const int kstride) {
+                [[gnu::always_inline]] void forward_sweep_k(const int i,
+                    const int j,
+                    const int k,
+                    const int ishift,
+                    const int jshift,
+                    real *__restrict__ ccol,
+                    real *__restrict__ dcol,
+                    const real *__restrict__ wcon,
+                    const real *__restrict__ ustage,
+                    const real *__restrict__ upos,
+                    const real *__restrict__ utens,
+                    const real *__restrict__ utensstage,
+                    const int ksize,
+                    const int istride,
+                    const int jstride,
+                    const int kstride) {
 
                 if (k == 0) {
                     forward_sweep_kmin(i,
@@ -304,7 +301,6 @@ namespace backend {
                 const int istride,
                 const int jstride,
                 const int kstride) {
-
                 real ccol0, ccol1;
                 real dcol0, dcol1;
                 real ustage0, ustage1, ustage2;
