@@ -34,3 +34,5 @@ if (SBENCH_WITH_PLATFORM_NVIDIA)
 endif()
 
 target_link_libraries(sbench PRIVATE sbench-lib)
+
+install(TARGETS sbench RUNTIME DESTINATION bin)
