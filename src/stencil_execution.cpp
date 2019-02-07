@@ -11,7 +11,7 @@ stencil_execution::stencil_execution(const arguments_map &args)
                        args.get<int>("k-layout"),
                        args.get<int>("halo"),
                        args.get<int>("alignment")),
-          1),
+          args.get<int>("working-set-copies") > 0 ? args.get<int>("working-set-copies") : args.get<int>("runs")),
       m_runs(args.get<int>("runs")) {}
 
 stencil_execution::~stencil_execution() {}
@@ -52,7 +52,8 @@ void stencil_execution::register_arguments(arguments &args) {
         .add({"k-layout", "layout specifier", "0"})
         .add({"halo", "halo size", "2"})
         .add({"alignment", "alignment in elements", "1"})
-        .add({"runs", "number of runs", "20"});
+        .add({"runs", "number of runs", "20"})
+        .add({"working-set-copies", "number of copies of each field (if 0, same as runs)", "0"});
 }
 
 void stencil_execution::loop(std::function<void(int, int, int)> f, int halo) const {
