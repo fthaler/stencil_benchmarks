@@ -3,7 +3,7 @@
 #include "except.h"
 #include <string>
 
-inline void cuda_check(cudaError_t err, const std::string& code, const std::string& file, int line) {
+inline void cuda_check(cudaError_t err, const std::string &code, const std::string &file, int line) {
     if (err != cudaSuccess) {
         throw error(file, line, cudaGetErrorString(err) + (" in " + code));
     }

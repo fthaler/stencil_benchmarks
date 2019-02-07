@@ -6,7 +6,7 @@ set(SBENCH_LIB_SOURCES
     field_repository.cpp
     result.cpp
     stencil_execution.cpp
-    stencil_factory.cpp 
+    stencil_factory.cpp
     table.cpp
     util.cpp)
 
