@@ -6,6 +6,7 @@
 #include "backend/openmp/hdiff_naive.h"
 #include "backend/openmp/hdiff_otf.h"
 #include "backend/openmp/hdiff_otf_blocked.h"
+#include "backend/openmp/vadv_blocked.h"
 #include "backend/openmp/vadv_kcache_blocked.h"
 #include "stencil_factory.h"
 #include "util.h"
@@ -41,6 +42,7 @@ namespace backend {
             REGISTER_STENCIL(hdiff_otf);
             REGISTER_STENCIL(hdiff_otf_blocked);
 
+            REGISTER_STENCIL(vadv_blocked);
             REGISTER_STENCIL(vadv_kcache_blocked);
 
 #undef REGISTER_STENCIL

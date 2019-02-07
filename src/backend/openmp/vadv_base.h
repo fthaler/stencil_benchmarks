@@ -15,8 +15,7 @@ namespace backend {
             using ::stencil::vadv<Allocator>::vadv;
 
           protected:
-#pragma omp declare simd linear(i) uniform(j, ccol, dcol, datacol, upos, utensstage, ksize, istride, jstride, kstride)
-            void backward_sweep_kmax(const int i,
+            [[gnu::always_inline]] void backward_sweep_kmax(const int i,
                 const int j,
                 const real *__restrict__ ccol,
                 const real *__restrict__ dcol,
@@ -35,9 +34,7 @@ namespace backend {
                 utensstage[index] = this->dtr_stage * (datacol[datacol_index] - upos[index]);
             }
 
-#pragma omp declare simd linear(i) \
-    uniform(j, k, ccol, dcol, datacol, upos, utensstage, ksize, istride, jstride, kstride)
-            void backward_sweep_kbody(const int i,
+            [[gnu::always_inline]] void backward_sweep_kbody(const int i,
                 const int j,
                 const int k,
                 const real *__restrict__ ccol,
@@ -55,8 +52,8 @@ namespace backend {
                 datacol[datacol_index] = dcol[index] - ccol[index] * datacol[datacol_index];
                 utensstage[index] = this->dtr_stage * (datacol[datacol_index] - upos[index]);
             }
-#pragma omp declare simd linear(i) uniform(j, ccol, dcol, upos, utensstage, ksize, istride, jstride, kstride)
-            void backward_sweep(const int i,
+
+            [[gnu::always_inline]] void backward_sweep(const int i,
                 const int j,
                 const real *__restrict__ ccol,
                 const real *__restrict__ dcol,
@@ -97,9 +94,8 @@ namespace backend {
                     index -= kstride;
                 }
             }
-#pragma omp declare simd linear(i) \
-    uniform(j, k, ccol, dcol, datacol, upos, utensstage, ksize, istride, jstride, kstride)
-            void backward_sweep_k(const int i,
+
+            [[gnu::always_inline]] void backward_sweep_k(const int i,
                 const int j,
                 const int k,
                 const real *__restrict__ ccol,
@@ -121,9 +117,7 @@ namespace backend {
                 }
             }
 
-#pragma omp declare simd linear(i) \
-    uniform(j, ishift, jshift, ccol, wcon, ustage, upos, utens, utensstage, ksize, istride, jstride, kstride)
-            void forward_sweep_kmin(const int i,
+            [[gnu::always_inline]] void forward_sweep_kmin(const int i,
                 const int j,
                 const int ishift,
                 const int jshift,
@@ -155,9 +149,8 @@ namespace backend {
                 ccol[index] = ccol[index] * divided;
                 dcol[index] = dcol[index] * divided;
             }
-#pragma omp declare simd linear(i) \
-    uniform(j, k, ishift, jshift, ccol, wcon, ustage, upos, utens, utensstage, ksize, istride, jstride, kstride)
-            void forward_sweep_kbody(const int i,
+
+            [[gnu::always_inline]] void forward_sweep_kbody(const int i,
                 const int j,
                 const int k,
                 const int ishift,
@@ -195,9 +188,7 @@ namespace backend {
                 dcol[index] = (dcol[index] - dcol[index - kstride] * acol) * divided;
             }
 
-#pragma omp declare simd linear(i) \
-    uniform(j, ishift, jshift, ccol, wcon, ustage, upos, utens, utensstage, ksize, istride, jstride, kstride)
-            void forward_sweep_kmax(const int i,
+            [[gnu::always_inline]] void forward_sweep_kmax(const int i,
                 const int j,
                 const int ishift,
                 const int jshift,
@@ -228,9 +219,8 @@ namespace backend {
                 real divided = real(1.0) / (bcol - ccol[index - kstride] * acol);
                 dcol[index] = (dcol[index] - dcol[index - kstride] * acol) * divided;
             }
-#pragma omp declare simd linear(i) \
-    uniform(j, k, ishift, jshift, ccol, wcon, ustage, upos, utens, utensstage, ksize, istride, jstride, kstride)
-            void forward_sweep_k(const int i,
+
+            [[gnu::always_inline]] void forward_sweep_k(const int i,
                 const int j,
                 const int k,
                 const int ishift,
@@ -298,9 +288,8 @@ namespace backend {
                         kstride);
                 }
             }
-#pragma omp declare simd linear(i) \
-    uniform(j, ishift, jshift, ccol, wcon, ustage, upos, utens, utensstage, ksize, istride, jstride, kstride)
-            void forward_sweep(const int i,
+
+            [[gnu::always_inline]] void forward_sweep(const int i,
                 const int j,
                 const int ishift,
                 const int jshift,
