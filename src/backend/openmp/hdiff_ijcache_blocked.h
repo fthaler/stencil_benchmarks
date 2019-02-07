@@ -117,6 +117,7 @@ namespace backend {
                                 cacheindex = 0;
                                 for (int j = jb; j < jmax; ++j) {
 #pragma omp simd
+#pragma vector nontemporal
                                     for (int i = ib; i < imax; ++i) {
                                         dst[index] =
                                             src[index] -
