@@ -16,7 +16,7 @@ namespace backend {
 
           protected:
 #pragma omp declare simd linear(i) uniform(j, ccol, dcol, datacol, upos, utensstage, ksize, istride, jstride, kstride)
-            __attribute__((always_inline)) void backward_sweep_kmax(const int i,
+            void backward_sweep_kmax(const int i,
                 const int j,
                 const real *__restrict__ ccol,
                 const real *__restrict__ dcol,
@@ -37,7 +37,7 @@ namespace backend {
 
 #pragma omp declare simd linear(i) \
     uniform(j, k, ccol, dcol, datacol, upos, utensstage, ksize, istride, jstride, kstride)
-            __attribute__((always_inline)) void backward_sweep_kbody(const int i,
+            void backward_sweep_kbody(const int i,
                 const int j,
                 const int k,
                 const real *__restrict__ ccol,
@@ -56,7 +56,7 @@ namespace backend {
                 utensstage[index] = this->dtr_stage * (datacol[datacol_index] - upos[index]);
             }
 #pragma omp declare simd linear(i) uniform(j, ccol, dcol, upos, utensstage, ksize, istride, jstride, kstride)
-            __attribute__((always_inline)) inline void backward_sweep(const int i,
+            void backward_sweep(const int i,
                 const int j,
                 const real *__restrict__ ccol,
                 const real *__restrict__ dcol,
@@ -99,7 +99,7 @@ namespace backend {
             }
 #pragma omp declare simd linear(i) \
     uniform(j, k, ccol, dcol, datacol, upos, utensstage, ksize, istride, jstride, kstride)
-            __attribute__((always_inline)) void backward_sweep_k(const int i,
+            void backward_sweep_k(const int i,
                 const int j,
                 const int k,
                 const real *__restrict__ ccol,
@@ -123,7 +123,7 @@ namespace backend {
 
 #pragma omp declare simd linear(i) \
     uniform(j, ishift, jshift, ccol, wcon, ustage, upos, utens, utensstage, ksize, istride, jstride, kstride)
-            __attribute__((always_inline)) void forward_sweep_kmin(const int i,
+            void forward_sweep_kmin(const int i,
                 const int j,
                 const int ishift,
                 const int jshift,
@@ -157,7 +157,7 @@ namespace backend {
             }
 #pragma omp declare simd linear(i) \
     uniform(j, k, ishift, jshift, ccol, wcon, ustage, upos, utens, utensstage, ksize, istride, jstride, kstride)
-            __attribute__((always_inline)) void forward_sweep_kbody(const int i,
+            void forward_sweep_kbody(const int i,
                 const int j,
                 const int k,
                 const int ishift,
@@ -197,7 +197,7 @@ namespace backend {
 
 #pragma omp declare simd linear(i) \
     uniform(j, ishift, jshift, ccol, wcon, ustage, upos, utens, utensstage, ksize, istride, jstride, kstride)
-            __attribute__((always_inline)) void forward_sweep_kmax(const int i,
+            void forward_sweep_kmax(const int i,
                 const int j,
                 const int ishift,
                 const int jshift,
@@ -230,7 +230,7 @@ namespace backend {
             }
 #pragma omp declare simd linear(i) \
     uniform(j, k, ishift, jshift, ccol, wcon, ustage, upos, utens, utensstage, ksize, istride, jstride, kstride)
-            __attribute__((always_inline)) void forward_sweep_k(const int i,
+            void forward_sweep_k(const int i,
                 const int j,
                 const int k,
                 const int ishift,
@@ -300,7 +300,7 @@ namespace backend {
             }
 #pragma omp declare simd linear(i) \
     uniform(j, ishift, jshift, ccol, wcon, ustage, upos, utens, utensstage, ksize, istride, jstride, kstride)
-            __attribute__((always_inline)) void forward_sweep(const int i,
+            void forward_sweep(const int i,
                 const int j,
                 const int ishift,
                 const int jshift,
@@ -364,6 +364,8 @@ namespace backend {
                         _mm_prefetch(reinterpret_cast<const char *>(&ccol[prefindex]), _MM_HINT_T1);
                         _mm_prefetch(reinterpret_cast<const char *>(&dcol[prefindex]), _MM_HINT_T1);
                     }
+#else
+#warn "no sofware prefetching in vadv stencil"
 #endif
 
                     ccol1 = ccol0;

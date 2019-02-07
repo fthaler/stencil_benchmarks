@@ -38,7 +38,7 @@ namespace backend {
                 const int istride = this->info().istride();
                 const int jstride = this->info().jstride();
                 const int kstride = this->info().kstride();
-                auto block = m_blocked_execution.block(istride, jstride);
+                const auto block = m_blocked_execution.block(istride, jstride);
 
                 const int u_inner_offset = block.inner.stride == istride ? 1 : 0;
                 const int u_outer_offset = block.inner.stride == istride ? 0 : 1;
@@ -48,14 +48,14 @@ namespace backend {
                 if (block.inner.stride != 1)
                     throw ERROR("data must be contiguous along i- or j-axis");
 
+#pragma omp parallel for collapse(2)
                 for (int outer_ib = 0; outer_ib < block.outer.size; outer_ib += block.outer.blocksize) {
                     for (int inner_ib = 0; inner_ib < block.inner.size; inner_ib += block.inner.blocksize) {
                         const int inner_max = std::min(inner_ib + block.inner.blocksize, block.inner.size);
                         const int outer_max = std::min(outer_ib + block.outer.blocksize, block.outer.size);
 
                         for (int outer_i = outer_ib; outer_i < outer_max; ++outer_i) {
-#pragma omp simd
-#pragma vector nontemporal
+#pragma omp simd simdlen(64 / sizeof(real))
                             for (int inner_i = inner_ib; inner_i < inner_max; ++inner_i) {
                                 this->forward_sweep(inner_i,
                                     outer_i,
