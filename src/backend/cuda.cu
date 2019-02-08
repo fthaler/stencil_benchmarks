@@ -5,6 +5,7 @@
 #include "backend/cuda/hdiff_naive.h"
 #include "backend/cuda/hdiff_otf.h"
 #include "backend/cuda/hdiff_otf_fillcache.h"
+#include "backend/cuda/vadv_kcache.h"
 #include "stencil_factory.h"
 #include "util.h"
 
@@ -39,6 +40,8 @@ namespace backend {
             REGISTER_STENCIL(hdiff_naive);
             REGISTER_STENCIL(hdiff_otf);
             REGISTER_STENCIL(hdiff_otf_fillcache);
+
+            REGISTER_STENCIL(vadv_kcache);
 
 #undef REGISTER_STENCIL
         }

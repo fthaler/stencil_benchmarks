@@ -7,7 +7,8 @@ add_library(sbench-platform-nvidia
             ../../backend/cuda/hdiff_ijcache.cu
             ../../backend/cuda/hdiff_naive.cu
             ../../backend/cuda/hdiff_otf.cu
-            ../../backend/cuda/hdiff_otf_fillcache.cu)
+            ../../backend/cuda/hdiff_otf_fillcache.cu
+            ../../backend/cuda/vadv_kcache.cu)
 set_target_properties(sbench-platform-nvidia PROPERTIES CUDA_STANDARD 11)
 target_compile_options(sbench-platform-nvidia PRIVATE "SHELL:${SBENCH_PLATFORM_NVIDIA_FLAGS}")
 target_link_libraries(sbench-platform-nvidia PRIVATE sbench-lib)
