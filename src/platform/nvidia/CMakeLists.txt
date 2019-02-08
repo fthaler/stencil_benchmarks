@@ -3,6 +3,8 @@ set(SBENCH_PLATFORM_NVIDIA_FLAGS "-gencode=arch=compute_60,code=sm_60 -gencode=a
 
 add_library(sbench-platform-nvidia
             nvidia.cu
+            ../../backend/cuda.cu
+            ../../backend/cuda/hdiff_ijcache.cu
             ../../backend/cuda/hdiff_naive.cu
             ../../backend/cuda/hdiff_otf.cu
             ../../backend/cuda/hdiff_otf_fillcache.cu)
