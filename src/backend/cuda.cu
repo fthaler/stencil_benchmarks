@@ -14,6 +14,9 @@ namespace backend {
         void register_stencils(stencil_factory &factory, const std::string &platform) {
 #define REGISTER_STENCIL(stencil) factory.register_stencil<stencil>(platform, "cuda", underscore_to_dash(#stencil));
 
+            auto shared_mem_config = sizeof(real) == 8 ? cudaSharedMemBankSizeEightByte : cudaSharedMemBankSizeFourByte;
+            CUDA_CHECK(cudaDeviceSetSharedMemConfig(shared_mem_config));
+
             REGISTER_STENCIL(basic_copy_1d);
             REGISTER_STENCIL(basic_avgi_1d);
             REGISTER_STENCIL(basic_avgj_1d);
