@@ -14,7 +14,7 @@ namespace backend {
             __device__ static constexpr int jplus_halo() { return JPlusHalo; }
             template <bool UniformHalo = (IMinusHalo == IPlusHalo && IMinusHalo == JMinusHalo &&
                                           IMinusHalo == JPlusHalo)>
-            __device__ static constexpr typename std::enable_if<UniformHalo, int>::type halo() {
+            __device__ __forceinline__ static constexpr typename std::enable_if<UniformHalo, int>::type halo() {
                 return IMinusHalo;
             }
 
@@ -24,7 +24,7 @@ namespace backend {
             int i, j, k;
             int iblock, jblock, kblock;
 
-            __device__ block_index(int isize, int jsize, int ksize)
+            __device__ __forceinline__ block_index(int isize, int jsize, int ksize)
                 : iblocksize(blockDim.x),
                   jblocksize(blockDim.y - JMinusHalo - JPlusHalo - (IMinusHalo > 0 ? 1 : 0) - (IPlusHalo > 0 ? 1 : 0)),
                   kblocksize(blockDim.z) {
@@ -46,26 +46,39 @@ namespace backend {
                 assert(kblocksize > 0);
             }
 
-            __device__ bool in_block_or_halo() const {
-                return iblock >= -IMinusHalo && iblock < iblocksize + IPlusHalo && jblock >= -JMinusHalo &&
-                       jblock < jblocksize + JPlusHalo && kblock >= 0 && kblock < kblocksize;
+            __device__ __forceinline__ bool in_block_or_halo(
+                int iminus_halo, int iplus_halo, int jminus_halo, int jplus_halo) const {
+                assert(iminus_halo <= IMinusHalo);
+                assert(iplus_halo <= IPlusHalo);
+                assert(jminus_halo <= JMinusHalo);
+                assert(jplus_halo <= JPlusHalo);
+                return iblock >= -iminus_halo && iblock < iblocksize + iplus_halo && jblock >= -jminus_halo &&
+                       jblock < jblocksize + jplus_halo && kblock >= 0 && kblock < kblocksize;
             }
 
-            __device__ bool in_block() const {
+            __device__ __forceinline__ bool in_block_or_halo() const {
+                return in_block_or_halo(IMinusHalo, IPlusHalo, JMinusHalo, JPlusHalo);
+            }
+
+            __device__ __forceinline__ bool in_block() const {
                 return iblock >= 0 && iblock < iblocksize && jblock >= 0 && jblock < jblocksize && kblock >= 0 &&
                        kblock < kblocksize;
             }
 
+            __device__ __forceinline__ int blocksize_with_halo() const {
+                return (iblocksize + IMinusHalo + IPlusHalo) * (jblocksize + JMinusHalo + JPlusHalo) * kblocksize;
+            }
+
           private:
             template <bool AllZero = (IMinusHalo == 0 && IPlusHalo == 0 && JMinusHalo == 0 && JPlusHalo == 0)>
-            __device__ typename std::enable_if<AllZero>::type compute_block_indices() {
+            __device__ __forceinline__ typename std::enable_if<AllZero>::type compute_block_indices() {
                 iblock = threadIdx.x;
                 jblock = threadIdx.y;
                 kblock = threadIdx.z;
             }
 
             template <bool AllZero = (IMinusHalo == 0 && IPlusHalo == 0 && JMinusHalo == 0 && JPlusHalo == 0)>
-            __device__ typename std::enable_if<!AllZero>::type compute_block_indices() {
+            __device__ __forceinline__ typename std::enable_if<!AllZero>::type compute_block_indices() {
                 const int jboundary_limit = jblocksize + JMinusHalo + JPlusHalo;
                 const int iminus_limit = jboundary_limit + (IMinusHalo > 0 ? 1 : 0);
                 const int iplus_limit = iminus_limit + (IPlusHalo > 0 ? 1 : 0);
@@ -87,7 +100,7 @@ namespace backend {
                 kblock = threadIdx.z;
             }
 
-            __device__ static constexpr int block_halo_padding(int x) {
+            __device__ __forceinline__ static constexpr int block_halo_padding(int x) {
                 return x == 0 ? 0 : x == 1 ? 1 : 2 * block_halo_padding((x + 1) / 2);
             }
         };
