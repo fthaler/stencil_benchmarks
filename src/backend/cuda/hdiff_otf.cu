@@ -54,7 +54,9 @@ namespace backend {
         }
 
         hdiff_otf::hdiff_otf(const arguments_map &args)
-            : stencil::hdiff<allocator<real>>(args), m_blocked_execution(args) {}
+            : stencil::hdiff<allocator<real>>(args), m_blocked_execution(args) {
+            CUDA_CHECK(cudaFuncSetCacheConfig(hdiff_otf_kernel, cudaFuncCachePreferL1));
+        }
 
         void hdiff_otf::run() {
             const int isize = this->info().isize();

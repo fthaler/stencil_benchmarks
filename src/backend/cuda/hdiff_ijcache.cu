@@ -67,7 +67,7 @@ namespace backend {
 
         hdiff_ijcache::hdiff_ijcache(const arguments_map &args)
             : stencil::hdiff<allocator<real>>(args), m_blocked_execution(args) {
-            CUDA_CHECK(cudaFuncSetCacheConfig(hdiff_ijcache_kernel, cudaFuncCachePreferShared));
+            CUDA_CHECK(cudaFuncSetCacheConfig(hdiff_ijcache_kernel, cudaFuncCachePreferL1));
         }
 
         void hdiff_ijcache::run() {
