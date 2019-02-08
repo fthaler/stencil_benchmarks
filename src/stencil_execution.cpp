@@ -18,7 +18,7 @@ stencil_execution::~stencil_execution() {}
 
 double stencil_execution::benchmark() {
     using clock = std::chrono::high_resolution_clock;
-    std::size_t dry = m_repository.array_size();
+    std::size_t dry = 2 * m_repository.array_size();
 
     prerun();
 
