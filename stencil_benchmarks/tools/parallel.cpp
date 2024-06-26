@@ -44,8 +44,8 @@ namespace py = pybind11;
 namespace {
 template <class T>
 using distribution_t = std::conditional_t<
-    std::is_same_v<T, bool>, std::bernoulli_distribution,
-    std::conditional_t<std::is_integral_v<T>, std::uniform_int_distribution<T>,
+    std::is_same<T, bool>::value, std::bernoulli_distribution,
+    std::conditional_t<std::is_integral<T>::value, std::uniform_int_distribution<T>,
                        std::uniform_real_distribution<T>>>;
 
 template <class T> void random_fill(T *first, T *last) {
