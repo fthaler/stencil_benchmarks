@@ -30,6 +30,6 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #
 # SPDX-License-Identifier: BSD-3-Clause
-from . import cuda_hip, openmp
+from . import basic
 
-__all__ = ["cuda_hip", "openmp"]
+__all__ = ["basic"]

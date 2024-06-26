@@ -30,6 +30,25 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #
 # SPDX-License-Identifier: BSD-3-Clause
-from . import cuda_hip, openmp
 
-__all__ = ["cuda_hip", "openmp"]
+from stencil_benchmarks.benchmark import Parameter
+from stencil_benchmarks.benchmarks_collection.unstructured import base
+
+from .mixin import UnstructuredMixin
+
+
+class BasicUnstructuredMixin(UnstructuredMixin):
+    thread_block_size = Parameter("thread block size", (1, 32, 8))
+    loop_block_size = Parameter("loop block size", (1, 1, 1))
+
+    def template_args(self):
+        return dict(
+            **super().template_args(),
+            thread_block_size=self.thread_block_size,
+            loop_block_size=self.loop_block_size,
+        )
+
+
+class Copy(BasicUnstructuredMixin, base.UnstructuredCopy):
+    def template_file(self):
+        return "copy.j2"
