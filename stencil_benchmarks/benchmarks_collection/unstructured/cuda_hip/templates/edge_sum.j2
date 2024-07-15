@@ -44,7 +44,7 @@ for ({{ nbtype }} jb = 0; jb < {{ loop_block_size[1] }}; ++jb) {
 
 {%- for nb in range(v2e_max_neighbors) %}
         const {{ nbtype }} neighbor_edge_{{ nb }} = v2e[vertex * {{ strides.v2e[0] }} + {{ nb }} * {{ strides.v2e[1] }}];
-        const {{ nbtype }} neighbor_base_index_{{ nb }} = neighbor_edge_{{ nb }} == -1 ? -1 : neighbor_edge_{{ nb }} % {{ nproma }} * {{ strides.inp[0] }} + neighbor_edge_{{ nb }} / {{ nproma }} * {{ strides.inp[1] }};
+        const {{ nbtype }} neighbor_base_index_{{ nb }} = {% if skip_values %}neighbor_edge_{{ nb }} == -1 ? -1 :{% endif %} neighbor_edge_{{ nb }} % {{ nproma }} * {{ strides.inp[0] }} + neighbor_edge_{{ nb }} / {{ nproma }} * {{ strides.inp[1] }};
 {%- endfor %}
 
         for ({{ nbtype }} kb = 0; kb < {{ loop_block_size[2] }}; ++kb) {
@@ -54,7 +54,9 @@ for ({{ nbtype }} jb = 0; jb < {{ loop_block_size[1] }}; ++jb) {
             {{ nbtype }} index = i * {{ strides.out[0] }} + j * {{ strides.out[1] }} + k * {{ strides.out[2] }};
             {{ ctype }} sum = 0;
 {%- for nb in range(v2e_max_neighbors) %}
+{%- if skip_values %}
             if (neighbor_base_index_{{ nb }} != -1)
+{%- endif %}
                 sum += inp[neighbor_base_index_{{ nb }} + k * {{ strides.inp[2] }}];
 {%- endfor %}
             out[index] = sum;
