@@ -56,6 +56,8 @@ using hipDeviceProp = hipDeviceProp_t;
 
 {% block gpu_kernel %}
 __global__ void gpu_kernel(
+    {{ nbtype }} const* __restrict__ v2e,
+    {{ nbtype }} const* __restrict__ e2v,
     {%- for arg in args %}
         {{ ctype }} * __restrict__ {{ arg }}{{ "," if not loop.last }}
     {%- endfor %}
@@ -68,6 +70,8 @@ __global__ void gpu_kernel(
 {% block kernel %}
 extern "C" int kernel(
     double* time,
+    {{ nbtype }} const* __restrict__ v2e,
+    {{ nbtype }} const* __restrict__ e2v,
     {%- for arg in args %}
         {{ ctype }} * __restrict__ {{ arg }}{{ "," if not loop.last }}
     {%- endfor %}
@@ -138,7 +142,7 @@ extern "C" int kernel(
     }
 
     for (int dry_run = 0; dry_run < {{ dry_runs }}; ++dry_run) {
-        gpu_kernel<<<grid_size, block_size, smem_size>>>(
+        gpu_kernel<<<grid_size, block_size, smem_size>>>(v2e, e2v,
             {%- for arg in args %}
                 {{ arg }}{{ "," if not loop.last }}
             {%- endfor %}
@@ -163,7 +167,7 @@ extern "C" int kernel(
     {%- if timers == 'hip-ext' %}
     hipExtLaunchKernelGGL(gpu_kernel, grid_size, block_size, smem_size, 0, start, stop, 0,
     {%- else %}
-    gpu_kernel<<<grid_size, block_size, smem_size>>>(
+    gpu_kernel<<<grid_size, block_size, smem_size>>>(v2e, e2v,
     {%- endif %}
         {%- for arg in args %}
             {{ arg }}{{ "," if not loop.last }}

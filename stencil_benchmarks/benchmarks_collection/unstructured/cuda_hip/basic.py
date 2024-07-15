@@ -52,3 +52,8 @@ class BasicUnstructuredMixin(UnstructuredMixin):
 class Copy(BasicUnstructuredMixin, base.UnstructuredCopy):
     def template_file(self):
         return "copy.j2"
+
+
+class EdgeSum(BasicUnstructuredMixin, base.EdgeSum):
+    def template_file(self):
+        return "edge_sum.j2"

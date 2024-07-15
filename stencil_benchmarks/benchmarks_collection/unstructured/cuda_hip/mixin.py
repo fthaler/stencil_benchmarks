@@ -36,6 +36,8 @@ import ctypes
 import warnings
 from pathlib import Path
 
+import numpy as np
+
 from stencil_benchmarks.benchmark import (
     Benchmark,
     ExecutionError,
@@ -139,7 +141,7 @@ class UnstructuredMixin(Benchmark):
             array.alloc_array(
                 d.shape,
                 d.dtype,
-                self.layout,
+                np.argsort(d.strides)[::-1],
                 self.alignment,
                 alloc=runtime.malloc,
                 apply_offset=self.offset_allocations,
@@ -168,6 +170,7 @@ class UnstructuredMixin(Benchmark):
         runtime.device_synchronize()
 
     def run_stencil(self, data):
+        data = [self._v2e_table, self._e2v_table] + list(data)
         with self.on_device(data) as device_data:
             data_ptrs = [
                 compilation.data_ptr(device_array)

@@ -42,12 +42,22 @@ for ({{ nbtype }} jb = 0; jb < {{ loop_block_size[1] }}; ++jb) {
         const {{ nbtype }} vertex = i + {{ nproma }} * j;
         if (vertex >= {{ nvertices }}) break;
 
+{%- for nb in range(v2e_max_neighbors) %}
+        const {{ nbtype }} neighbor_edge_{{ nb }} = v2e[vertex * {{ strides.v2e[0] }} + {{ nb }} * {{ strides.v2e[1] }}];
+        const {{ nbtype }} neighbor_base_index_{{ nb }} = neighbor_edge_{{ nb }} == -1 ? -1 : neighbor_edge_{{ nb }} % {{ nproma }} * {{ strides.inp[0] }} + neighbor_edge_{{ nb }} / {{ nproma }} * {{ strides.inp[1] }};
+{%- endfor %}
+
         for ({{ nbtype }} kb = 0; kb < {{ loop_block_size[2] }}; ++kb) {
             {{ nbtype }} k = blockIdx.z * {{ thread_block_size[2] * loop_block_size[2] }} + threadIdx.z * {{ loop_block_size[2] }} + kb;
             if (k >= {{ nlevels }}) break;
 
             {{ nbtype }} index = i * {{ strides.out[0] }} + j * {{ strides.out[1] }} + k * {{ strides.out[2] }};
-            out[index] = inp[index];
+            {{ ctype }} sum = 0;
+{%- for nb in range(v2e_max_neighbors) %}
+            if (neighbor_base_index_{{ nb }} != -1)
+                sum += inp[neighbor_base_index_{{ nb }} + k * {{ strides.inp[2] }}];
+{%- endfor %}
+            out[index] = sum;
         }
     }
 }
