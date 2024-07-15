@@ -81,12 +81,15 @@ extern "C" int kernel(
     dim3 grid_size((unsigned)-1, (unsigned)-1, (unsigned)-1);
     unsigned smem_size = 0;
     {% block kernel_prepare %}
-        block_size = dim3({{ block_size[0] }},
-                          {{ block_size[1] }},
-                          {{ block_size[2] }});
-        grid_size = dim3({{ (domain[0] + block_size[0] - 1) // block_size[0] }},
-                         {{ (domain[1] + block_size[1] - 1) // block_size[1] }},
-                         {{ (domain[2] + block_size[2] - 1) // block_size[2] }});
+        block_size = dim3({{ thread_block_size[0] }},
+                          {{ thread_block_size[1] }},
+                          {{ thread_block_size[2] }});
+        {%- set total_block_size_0 = thread_block_size[0] * loop_block_size[0] %}
+        {%- set total_block_size_1 = thread_block_size[1] * loop_block_size[1] %}
+        {%- set total_block_size_2 = thread_block_size[2] * loop_block_size[2] %}
+        grid_size = dim3({{ (nproma + total_block_size_0 - 1) // total_block_size_0 }},
+                         {{ ((nvertices + nproma - 1) // nproma + total_block_size_1 - 1) // total_block_size_1 }},
+                         {{ (nlevels + total_block_size_2 - 1) // total_block_size_2 }});
     {% endblock kernel_prepare %}
 
     if (smem_size > device_properties.sharedMemPerBlock) {

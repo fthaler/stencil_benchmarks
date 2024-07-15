@@ -35,16 +35,17 @@ SPDX-License-Identifier: BSD-3-Clause
 {% extends "base.j2" %}
 
 {% block gpu_kernel_body %}
+for ({{ nbtype }} vb = 0; vb < {{ loop_block_size[1] }}; ++vb) {
+    for ({{ nbtype }} nb = 0; nb < {{ loop_block_size[0] }}; ++nb) {
+        for ({{ nbtype }} kb = 0; kb < {{ loop_block_size[2] }}; ++kb) {
+            {{ nbtype }} n = blockIdx.x * {{ thread_block_size[0] * loop_block_size[0] }} + threadIdx.x * {{ loop_block_size[0] }} + nb;
+            {{ nbtype }} v = blockIdx.y * {{ thread_block_size[1] * loop_block_size[1] }} + threadIdx.y * {{ loop_block_size[1] }} + vb;
+            {{ nbtype }} k = blockIdx.z * {{ thread_block_size[2] * loop_block_size[2] }} + threadIdx.z * {{ loop_block_size[2] }} + kb;
+            if (n < {{ nproma }} & v < {{ (nvertices + nproma - 1) // nproma }} & k < {{ nlevels }}) {
+                {{ nbtype }} index = n * {{ strides.out[0] }} + v * {{ strides.out[1] }} + k * {{ strides.out[2] }};
+                out[index] = inp[index];
+            }
+        }
+    }
+}
 {% endblock gpu_kernel_body %}
-
-{% block kernel_prepare %}
-    block_size = dim3({{ thread_block_size[0] }},
-                      {{ thread_block_size[1] }},
-                      {{ thread_block_size[2] }});
-    {%- set total_block_size_x = thread_block_size[0] * loop_block_size[0] %}
-    {%- set total_block_size_y = thread_block_size[0] * loop_block_size[0] %}
-    {%- set total_block_size_z = thread_block_size[0] * loop_block_size[0] %}
-    grid_size = dim3({{ (nproma + total_block_size_x - 1) // total_block_size_x }},
-                     {{ (nvertices + total_block_size_y - 1) // total_block_size_y }},
-                     {{ (nlevels + total_block_size_z - 1) // total_block_size_z }});
-{% endblock kernel_prepare %}
