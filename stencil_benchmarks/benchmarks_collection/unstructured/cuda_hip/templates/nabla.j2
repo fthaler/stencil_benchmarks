@@ -1,0 +1,85 @@
+{#
+Stencil Benchmarks
+
+Copyright (c) 2017-2021, ETH Zurich and MeteoSwiss
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice,
+this list of conditions and the following disclaimer.
+
+2. Redistributions in binary form must reproduce the above copyright notice,
+this list of conditions and the following disclaimer in the documentation
+and/or other materials provided with the distribution.
+
+3. Neither the name of the copyright holder nor the names of its contributors
+may be used to endorse or promote products derived from this software without
+specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+POSSIBILITY OF SUCH DAMAGE.
+
+SPDX-License-Identifier: BSD-3-Clause
+#}
+{% extends "base.j2" %}
+
+{% block gpu_kernel_body %}
+for ({{ nbtype }} jb = 0; jb < {{ loop_block_size[1] }}; ++jb) {
+    const {{ nbtype }} j = blockIdx.y * {{ thread_block_size[1] * loop_block_size[1] }} + threadIdx.y * {{ loop_block_size[1] }} + jb;
+    for ({{ nbtype }} ib = 0; ib < {{ loop_block_size[0] }}; ++ib) {
+        const {{ nbtype }} i = blockIdx.x * {{ thread_block_size[0] * loop_block_size[0] }} + threadIdx.x * {{ loop_block_size[0] }} + ib;
+        const {{ nbtype }} vertex = i + {{ nproma }} * j;
+        if (vertex >= {{ nvertices }}) break;
+
+{%- for nb in range(v2e_max_neighbors) %}
+        const {{ nbtype }} neighbor_edge_{{ nb }} = v2e[vertex * {{ strides.v2e[0] }} + {{ nb }} * {{ strides.v2e[1] }}];
+        const {{ nbtype }} neighbor_edge_base_index_{{ nb }} = {% if skip_values %}neighbor_edge_{{ nb }} == -1 ? -1 :{% endif %} neighbor_edge_{{ nb }} % {{ nproma }} * {{ strides.s0[0] }} + neighbor_edge_{{ nb }} / {{ nproma }} * {{ strides.s0[1] }};
+
+        const {{ nbtype }} neighbor_edge_{{ nb }}_vertex_0 = {% if skip_values %}neighbor_edge_{{ nb }} == -1 ? -1 :{% endif %} e2v[neighbor_edge_{{ nb }} * {{ strides.e2v[0] }} + 0 * {{ strides.e2v[1] }}];
+        const {{ nbtype }} neighbor_edge_{{ nb }}_vertex_1 = {% if skip_values %}neighbor_edge_{{ nb }} == -1 ? -1 :{% endif %} e2v[neighbor_edge_{{ nb }} * {{ strides.e2v[0] }} + 1 * {{ strides.e2v[1] }}];
+        const {{ nbtype }} neighbor_edge_{{ nb }}_vertex_base_index_0 = neighbor_edge_{{ nb }}_vertex_0 % {{ nproma }} * {{ strides.pp[0] }} + neighbor_edge_{{ nb }}_vertex_0 / {{ nproma }} * {{ strides.pp[1] }};
+        const {{ nbtype }} neighbor_edge_{{ nb }}_vertex_base_index_1 = neighbor_edge_{{ nb }}_vertex_1 % {{ nproma }} * {{ strides.pp[0] }} + neighbor_edge_{{ nb }}_vertex_1 / {{ nproma }} * {{ strides.pp[1] }};
+
+        const {{ ctype }} neighbor_edge_sign_{{ nb }} = {% if skip_values %}neighbor_edge_{{ nb }} == -1 ? 0 :{%endif%} sign[neighbor_edge_{{ nb }} % {{ nproma }} * {{ strides.sign[0] }} + neighbor_edge_{{ nb }} / {{ nproma }} * {{ strides.sign[1] }}];
+{%- endfor %}
+        const {{ ctype }} v = vol[i * {{ strides.vol[0] }} + j * {{ strides.vol[1] }}];
+
+        for ({{ nbtype }} kb = 0; kb < {{ loop_block_size[2] }}; ++kb) {
+            {{ nbtype }} k = blockIdx.z * {{ thread_block_size[2] * loop_block_size[2] }} + threadIdx.z * {{ loop_block_size[2] }} + kb;
+            if (k >= {{ nlevels }}) break;
+
+            {{ ctype }} sum0 = 0, sum1 = 0;
+{%- for nb in range(v2e_max_neighbors) %}
+{%- if skip_values %}
+            if (neighbor_edge_base_index_{{ nb }} != -1)
+{%- endif %}
+            {
+                const {{ ctype }} edge_s0 = s0[neighbor_edge_base_index_{{ nb }} + k * {{ strides.s0[2] }}];
+                const {{ ctype }} edge_s1 = s1[neighbor_edge_base_index_{{ nb }} + k * {{ strides.s0[2] }}];
+                const {{ ctype }} edge_vertex_0_pp = pp[neighbor_edge_{{ nb }}_vertex_base_index_0 + k * {{ strides.pp[2] }}];
+                const {{ ctype }} edge_vertex_1_pp = pp[neighbor_edge_{{ nb }}_vertex_base_index_1 + k * {{ strides.pp[2] }}];
+                const {{ ctype }} edge_pp_avg = (edge_vertex_0_pp + edge_vertex_1_pp) / 2;
+                const {{ ctype }} zavg0 = edge_pp_avg * edge_s0;
+                const {{ ctype }} zavg1 = edge_pp_avg * edge_s1;
+                sum0 += zavg0 * neighbor_edge_sign_{{ nb }};
+                sum1 += zavg1 * neighbor_edge_sign_{{ nb }};
+            } 
+{%- endfor %}
+            {{ nbtype }} index = i * {{ strides.out0[0] }} + j * {{ strides.out0[1] }} + k * {{ strides.out0[2] }};
+            out0[index] = sum0 / v;
+            out1[index] = sum1 / v;
+        }
+    }
+}
+{% endblock gpu_kernel_body %}
