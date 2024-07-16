@@ -191,13 +191,13 @@ class Unstructured(Benchmark):
 
         s = slice(None, nxedges)
         data[s, 0] = i[s] + nx * j[s]
-        data[s, 1] = i[s] + 1 + nx * j[s]
+        data[s, 1] = (i[s] + 1) % nx + nx * j[s]
         s = slice(nxedges, nxedges + nyedges)
         data[s, 0] = i[s] + nx * j[s]
-        data[s, 1] = i[s] + nx * (j[s] + 1)
+        data[s, 1] = i[s] + nx * ((j[s] + 1) % ny)
         s = slice(nxedges + nyedges, None)
         data[s, 0] = i[s] + nx * j[s]
-        data[s, 1] = i[s] + 1 + nx * (j[s] + 1)
+        data[s, 1] = (i[s] + 1) % nx + nx * ((j[s] + 1) % ny)
 
         return data
 
